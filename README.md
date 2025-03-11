@@ -1,6 +1,6 @@
 # 2TSY2425_IT0011_TC22-9 - Pykings
 
-## Banking System
+## TAMBANK
 
 @orljorstin  :  Camama, Earl Justin\
 @Dane-000    :  Borja, Fernando Dane\
@@ -13,13 +13,13 @@
     Create different account types (savings, checking, fixed deposit)\
     View account details and balance\
     Update account information\
-    Close accounts\
+    Close accounts
 
 2. Transaction Processing
     Deposit and withdraw funds\
     Transfer between accounts\
     Bill payments and scheduled transfers\
-    Transaction history and statements\
+    Transaction history and statements
 
 
 
