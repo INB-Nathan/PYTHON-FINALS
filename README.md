@@ -5,7 +5,7 @@
 @orljorstin  :  Camama, Earl Justin\
 @Dane-000    :  Borja, Fernando Dane\
 @INB-Nathan  :  Cabrales, Nathan Josua\
-@G10dero     :  Tendero, Guinevere\
+@G10dero     :  Tendero, Guinevere
 
 ## Project Description:
 
