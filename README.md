@@ -21,11 +21,5 @@
     Bill payments and scheduled transfers\
     Transaction history and statements\
 
-3. User Authentication & Security
-    Secure login system with password protection\
-    Role-based access (customer vs bank employee)\
-    Session management\
-    Data encryption for sensitive information\
-
 
 
