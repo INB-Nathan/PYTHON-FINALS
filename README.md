@@ -27,10 +27,5 @@
     Session management\
     Data encryption for sensitive information\
 
-4. Financial Analysis
-    Account balance trends\
-    Spending analysis by category\
-    Visual reports and charts\
-
 
 
