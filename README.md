@@ -9,13 +9,13 @@
 
 ## Project Description:
 
-1. Account Management
+1. Account Management\
     Create different account types (savings, checking, fixed deposit)\
     View account details and balance\
     Update account information\
     Close accounts
 
-2. Transaction Processing
+2. Transaction Processing\
     Deposit and withdraw funds\
     Transfer between accounts\
     Bill payments and scheduled transfers\
