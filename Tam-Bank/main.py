@@ -319,6 +319,11 @@ class TamBank:
 
 print("===== FILE HANDLING TEST =====\n")
 
+<<<<<<< HEAD
+=======
+print("===== FILE HANDLING TEST =====\n")
+
+>>>>>>> ccd61c5 (Revert "Merge remote-tracking branch 'origin/main' into TamBank")
 bank = TamBank()
 
 account1 = bank.createAccount("Camama", "Earl", 1020.0, "09123426789")
@@ -398,4 +403,8 @@ else:
 
 print()
 
+<<<<<<< HEAD
 print("\n===== TEST COMPLETED =====")
+=======
+print("\n===== TEST COMPLETED =====")
+>>>>>>> ccd61c5 (Revert "Merge remote-tracking branch 'origin/main' into TamBank")
