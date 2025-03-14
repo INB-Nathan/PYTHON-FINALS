@@ -101,4 +101,42 @@ class fileHandling:
             print(f"Erorr loading accounts : {e}")
             return []
     
-    def
+    def saveTransactions(self, accountNumber):
+        """ Save the transactions to the .csv file """
+        try:
+            with open(self.transactionFile, "a", newline='') as csvfile:
+                save = csv.writer(csvfile)
+                if csvfile.tell() == 0:
+                    save.writerow(["Account Number", "Date", "Description", "Amount", "Balance"])
+                for transaction in self.transactions:
+                    save.writerow([transaction['accountNumber'], transaction['date'], transaction['description'], transaction['amount'], transaction['balance']])
+            return True
+        except Exception as e:
+            print(f"Error saving transactions to {self.transactionFile}: {e}")
+            return False
+
+    def loadTransactions(self, accountNumber):
+        """Load transactions for a specific account"""
+        transactions = []
+        
+        if not os.path.exists(self.transactionFile):
+            return transactions
+        
+        try:
+            with open(self.transactionFile, 'r', newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                
+                for row in reader:
+                    if row['AccountNumber'] == accountNumber:
+                        transaction = {
+                            'date': datetime.strptime(row['Date'], '%Y-%m-%d %H:%M:%S'),
+                            'description': row['Description'],
+                            'amount': float(row['Amount']),
+                            'balance': float(row['BalanceAfter'])
+                        }
+                        transactions.append(transaction)
+            
+            return transactions
+        except Exception as e:
+            print(f"Error loading transactions: {e}")
+            return []
