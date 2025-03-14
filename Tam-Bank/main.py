@@ -89,6 +89,7 @@ class fileHandling:
     accountFile = "accounts.csv"
     transactionFile = "transactions.csv"
 
+    @staticmethod
     def saveFile(self):
         """ Save the account details to the .csv file """
         try:
@@ -103,7 +104,7 @@ class fileHandling:
         except Exception as e:
             return False, f"Error saving accounts to {self.accountFile}: {e}"
 
-
+    @staticmethod
     def loadFile(self):
         """ Load the account details from the .csv file """
         accounts = []
@@ -127,6 +128,7 @@ class fileHandling:
             print(f"Erorr loading accounts : {e}")
             return []
     
+    @staticmethod
     def saveTransactions(self, accountNumber):
         """ Save the transactions to the .csv file """
         try:
@@ -141,6 +143,7 @@ class fileHandling:
             print(f"Error saving transactions to {self.transactionFile}: {e}")
             return False
 
+    @staticmethod
     def loadTransactions(self, accountNumber):
         """Load transactions for a specific account"""
         transactions = []
@@ -166,3 +169,71 @@ class fileHandling:
         except Exception as e:
             print(f"Error loading transactions: {e}")
             return []
+
+class TamBank:
+    """ Manager class for the bank """
+    def __init__(self):
+        self.accounts = {}
+        self.accounts = fileHandling.loadFile(self)
+    
+    def _loadAccounts(self):
+        """ Load the accounts from the .csv file """
+        self.accounts = fileHandling.loadFile(self)
+        for account in self.accounts:
+            account.transactions = fileHandling.loadTransactions(account.accountNumber)
+        print(f"Loaded {len(self.accounts)} accounts from storage.")
+    
+    def _saveAccounts(self):
+        """ Save the accounts to the .csv file """
+        accountsList = list(self.accounts.values())
+        return fileHandling.saveAccounts(accountsList)
+    
+    def createAccount(self, fName, lName, initialBal = 0.0, mobileNo = "", email = ""):
+        """ Create a new account """
+        while True:
+            accountNumber = str(random.randint(20210000,20230000))
+            if accountNumber not in self.accounts:
+                break
+        account = Account(fName=fName, lName=lName, initialBal=initialBal, mobileNo=mobileNo, email=email)
+        self.accounts[account.accountNumber] = account
+        return account
+    
+    def close_account(self, account_number):
+        """Close an account"""
+        account = self.get_account(account_number)
+        if not account:
+            return False, "Account not found"
+            
+        success, message = account.closeAcc()
+        if success:
+            # Update account status in file
+            self._save_accounts()
+        
+        return success, message
+    
+    def deposit(self, account_number, amount):
+        """Deposit to an account"""
+        account = self.get_account(account_number)
+        if not account:
+            return False, "Account not found"
+        
+        success, message = account.depositAcc(float(amount))
+        if success:
+            # Update account balance in file
+            self._save_accounts()
+        
+        return success, message
+    
+    def withdraw(self, account_number, amount):
+        """Withdraw from an account"""
+        account = self.get_account(account_number)
+        if not account:
+            return False, "Account not found"
+        
+        success, message = account.withdrawAcc(float(amount))
+        if success:
+            # Update account balance in file
+            self._save_accounts()
+        
+        return success, message
+
