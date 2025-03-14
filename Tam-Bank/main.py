@@ -26,16 +26,42 @@ class Account:
             self._recordTransaction("Initial Deposit", initialBal)
 
     def depositAcc(self,amount):
-        """ deposit nga ni eh """
-        pass
+        """ Deposit money into account"""
+        if amount <= 0:
+            return False, "Deposit amount must be greater than 0"
+        if self.status != "Active":
+            return False, f"Cannot deposit to {self.status} account"
+        
+        self.balance += amount
+        self._recordTransaction("Deposit", amount)
+
+        fileHandling.saveTransactions(self.accountNumber, [self.transactionsp[-1]])
+
+        return True, f"Deposited PHP{amount:.2f}. New balance: PHP{self.balance:.2f}"
 
     def withdrawAcc(self,amount):
-        """ withdraw nga ni eh """
-        pass
+        """ Withdraw money from account """
+        if amount <= 0:
+            return False, "Withdrawal amount must be greater than 0"
+        if self.status != "Active":
+            return False, f"Cannot withdraw from {self.status} account"
+        if amount > self.balance:
+            return False, f"Insufficient funds. Current balance : PHP{self.balance:.2f}"
+        
+        self.balance -= amount
+        self._recordTransaction("Withdrawal", -amount)
+
+        fileHandling.saveTransactions(self.accountNumber, [self.transactions[-1]])
 
     def _recordTransaction(self, description, amount):
-        """ record man daw ng transaksyon"""
-        pass
+        """ Record the transaction """
+        transaction = {
+            'date': datetime.now(),
+            'description': description,
+            'amount': amount,
+            'balance': self.balance
+        }
+        self.transactions.append(transaction)
 
     def getHistory(self):
         """ This function will return the history of transactions which is stored in transactions. """
