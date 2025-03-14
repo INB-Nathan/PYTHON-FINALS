@@ -317,5 +317,85 @@ class TamBank:
         
         return success, message
 
+print("===== FILE HANDLING TEST =====\n")
+
+bank = TamBank()
+
+account1 = bank.createAccount("Camama", "Earl", 1020.0, "09123426789")
+print(f"Created: {account1}")
+
+account2 = bank.createAccount("Borja", "Fernando Dane", 5020.0, "09876143210")
+print(f"Created: {account2}")
+
+account3 = bank.createAccount("Cabrales", "Nathan Josua", 2050.0, "09123426724")
+print(f"Created: {account1}")
+
+account4 = bank.createAccount("Tendero", "Guinevere", 500.0, "09876143111")
+print(f"Created: {account2}")
+
+print("\nPerforming transactions...")
+status1, msg1 = bank.deposit(account1.accountNumber, 250)
+print(f"Deposit: {msg1}")
+
+status2, msg2 = bank.withdraw(account1.accountNumber, 100)
+print(f"Withdrawal: {msg2}")
+
+status3, msg3 = bank.deposit(account2.accountNumber, 300)
+print(f"Deposit: {msg3}")
+
+status4, msg4 = bank.withdraw(account2.accountNumber, 200)
+print(f"Withdrawal: {msg4}")
+
+status5, msg5 = bank.deposit(account3.accountNumber, -100)
+print(f"Deposit: {msg5}")
+
+status6, msg6 = bank.withdraw(account3.accountNumber, 2050.50)
+print(f"Withdrawal: {msg6}")
+
+status7, msg7 = bank.deposit(account4.accountNumber, 12043.2323123)
+print(f"Deposit: {msg7}")
+
+print("\nUpdated accounts:")
+print(bank.getAccount(account1.accountNumber))
+print()
+print(bank.getAccount(account2.accountNumber))
+print()
+print(bank.getAccount(account3.accountNumber))
+print()
+print(bank.getAccount(account4.accountNumber))
+
+
+bank = None 
+
+new_bank = TamBank()
+
+print("\nAccounts after reloading:")
+if account1.accountNumber in new_bank.accounts:
+    print(new_bank.getAccount(account1.accountNumber))
+else:
+    print(f"Account {account1.accountNumber} not found after reload!")
+
+print()
+
+if account2.accountNumber in new_bank.accounts:
+    print(new_bank.getAccount(account2.accountNumber))
+else:
+    print(f"Account {account2.accountNumber} not found after reload!")
+
+print()
 
 if account3.accountNumber in new_bank.accounts:
+    print(new_bank.getAccount(account3.accountNumber))
+else:
+    print(f"Account {account3.accountNumber} not found after reload!")
+
+print()
+
+if account4.accountNumber in new_bank.accounts:
+    print(new_bank.getAccount(account4.accountNumber))
+else:
+    print(f"Account {account4.accountNumber} not found after reload!")
+
+print()
+
+print("\n===== TEST COMPLETED =====")
