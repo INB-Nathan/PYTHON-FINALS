@@ -20,6 +20,3 @@
     Transfer between accounts\
     Bill payments and scheduled transfers\
     Transaction history and statements
-
-
-
