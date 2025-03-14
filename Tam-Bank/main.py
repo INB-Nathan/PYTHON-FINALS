@@ -77,8 +77,7 @@ class fileHandling:
         except Exception as e:
             return False, f"Error saving accounts to {self.accountFile}: {e}"
 
-            
-    
+
     def loadFile(self):
         """ Load the account details from the .csv file """
         accounts = []
@@ -87,6 +86,19 @@ class fileHandling:
             return accounts
         
         try:
-            pass
-        except:
-            pass
+            with open(self.accountFile, "r", newline='') as csvfile:
+                read = csv.reader(csvfile)
+                
+                for row in read:
+                    account = Account(accountNumber=row[0], fName=row[1], lName=row[2], mobileNo=row[3], email=row[4], initialBal=row[5])
+                    account.dateOpened = datetime.strptime(row[6], '%Y-%m-%d %H:%M:%S')
+                    account.status = row['Status']
+
+                    account.transactions = self.loadTransactions(account.accountNumber)
+                    accounts.append(account)
+            return accounts
+        except Exception as e:
+            print(f"Erorr loading accounts : {e}")
+            return []
+    
+    def
