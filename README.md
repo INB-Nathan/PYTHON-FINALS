@@ -121,14 +121,10 @@ DATE                 DESCRIPTION         AMOUNT      BALANCE
 | <img src="https://github.com/INB-Nathan.png" width="30" height="30" alt="@INB-Nathan"/> | [@INB-Nathan](https://github.com/INB-Nathan) | Cabrales, Nathan Josua |
 | <img src="https://github.com/G10dero.png" width="30" height="30" alt="@G10dero"/> | [@G10dero](https://github.com/G10dero) | Tendero, Guinevere |
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 📊 Project Status
 
 Last Updated: 2025-03-15
-Current Version: 1.0.0
 Status: Under Development
 
 ---
