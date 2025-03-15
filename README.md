@@ -14,9 +14,12 @@
 
 TamBank is a secure and user-friendly banking system developed in Python. It offers a complete suite of account management and transaction processing capabilities, featuring secure password authentication, transaction recording, and persistent data storage.
 
-The system provides command-line interface for managing bank accounts, performing financial transactions, and maintaining account security. It simulates core banking functionalities with proper error handling and data validation.
+The system provides GUI interface for managing bank accounts, performing financial transactions, and maintaining account security. It simulates core banking functionalities with proper error handling and data validation.
 
 ## ✨ Features
+
+### 🪟 GUI Tkinter
+- **User Friendly GUI Interface** - Easy input fields and good to the eyes
 
 ### 🔒 Account Management
 - **User Authentication** - Secure login with SHA-256 password hashing
@@ -74,40 +77,6 @@ Tam-Bank/
 3. Run the application
 ```bash
 python main.py
-```
-
-## 📱 Usage Examples
-
-### Creating an Account
-```
-===== REGISTER =====
-First Name: John
-Last Name: Doe
-Initial Balance: 1000
-Mobile Number: 09123456789
-Email: john.doe@example.com
-Password: ********
-Confirm Password: ********
-
-Account created successfully!
-Your Account Number is: 20210123
-Please save this number for future login.
-```
-
-### Depositing Funds
-```
-===== DEPOSIT =====
-Enter amount to deposit: PHP500
-Deposited PHP500.00. New balance: PHP1500.00
-```
-
-### Viewing Transaction History
-```
-===== TRANSACTION HISTORY =====
-DATE                 DESCRIPTION         AMOUNT      BALANCE    
---------------------------------------------------------------------
-2025-03-15 09:15     Initial Deposit     PHP1000.00  PHP1000.00 
-2025-03-15 09:20     Deposit             PHP500.00   PHP1500.00 
 ```
 
 ## 👥 Team Members
