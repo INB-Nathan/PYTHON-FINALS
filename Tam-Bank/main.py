@@ -276,13 +276,40 @@ class TamBank:
         self._saveAccounts()
         return account
     
-    def getAccount(self, account_number):
-        """Get account by account number"""
-        return self.accounts.get(account_number)
+    def updateAccount(self, fName, lName, mobileNo, email, accountNumber):
+        """ Update account details """
+        account = self.getAccount(accountNumber)
+        if not account:
+            return False, "Account not found"
+        
+        account.fName = fName if fName.strip() else account.fName
+        account.lName = lName if lName.strip() else account.lName
+        account.mobileNo = mobileNo if mobileNo.strip() else account.mobileNo
+        account.email = email if email.strip() else account.email
+        
+        self._saveAccounts()
+        return True, "Account updated successfully"
     
-    def closeAccount(self, account_number):
+    def deleteAccount(self, accountNumber):
+        """ Permanently delete an account from the system """
+        if accountNumber not in self.accounts:
+            return False, "Account not found"
+        
+        account = self.accounts[accountNumber]
+        if account.balance > 0:
+            return False, "Cannot delete account with remaining balance. Please withdraw all funds first."
+        
+        del self.accounts[accountNumber]
+        self._saveAccounts()
+        return True, "Account permanently deleted."
+    
+    def getAccount(self, accountNumber):
+        """Get account by account number"""
+        return self.accounts.get(accountNumber)
+    
+    def closeAccount(self, accountNumber):
         """Close an account"""
-        account = self.get_account(account_number)
+        account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
             
@@ -293,9 +320,9 @@ class TamBank:
         
         return success, message
     
-    def deposit(self, account_number, amount):
+    def deposit(self, accountNumber, amount):
         """Deposit to an account"""
-        account = self.getAccount(account_number)
+        account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
         
@@ -305,9 +332,9 @@ class TamBank:
         
         return success, message
     
-    def withdraw(self, account_number, amount):
+    def withdraw(self, accountNumber, amount):
         """Withdraw from an account"""
-        account = self.getAccount(account_number)
+        account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
         
@@ -400,4 +427,3 @@ else:
 print()
 
 print("\n===== TEST COMPLETED =====")
-
