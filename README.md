@@ -3,8 +3,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python 3.8+"/>
   <img src="https://img.shields.io/badge/Status-Development-yellow.svg" alt="Status: Development"/>
-  <img src="https://img.shields.io/badge/Version-1.0.0-green.svg" alt="Version 1.0.0"/>
-  <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License: MIT"/>
 </div>
 
 <div align="center">
