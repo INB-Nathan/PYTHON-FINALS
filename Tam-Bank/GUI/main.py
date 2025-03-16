@@ -16,28 +16,75 @@ def authenticate(sc, txtID, txtPass):
         txtID.delete(0, END)
         txtPass.delete(0, END)
 
-def createAcc():
-    print('creating acc...')
+def createWindow():
+    """Opens window to create new accounts"""
+    scCreate = Toplevel() # scCreate is placed on top of the main window
+    scCreate.title('Create Account') # Title of the window
+    scCreate.geometry("800x600") # Window size
+    scCreate.resizable(False, False) # Disables resize
+    scCreate.grab_set() # Ensures all action is applied to the current window not the user window
+
+    lblFont = ('Arial', 18, 'bold')
+    txtFont = ('Arial', 18)
+    btnFont = ("Arial", 16)
+
+    # Labels
+    lblHeader = Label(scCreate, text="Enter user details", font=("Arial", 20, 'bold'))
+    lblID = Label(scCreate, text="Account ID:", font = lblFont)
+    lblFname = Label(scCreate, text="First Name: ", font = lblFont)
+    lblLname = Label(scCreate, text="Last Name", font = lblFont)
+    lblNum = Label(scCreate, text="Contact Number:", font = lblFont)
+
+    # Entries
+    txtID = Entry(scCreate, font=txtFont)
+    txtFname = Entry(scCreate, font=txtFont)
+    txtLname = Entry(scCreate, font=txtFont)
+    txtNum = Entry(scCreate, font=txtFont)
+
+    # Buttons
+    btnCreate = Button(scCreate, text='Create', font = btnFont, command = lambda: print('Created Acc')) # will be replaced with the real func
+    btnCancel = Button(scCreate, text="Cancel", font= btnFont, command=scCreate.destroy)
+
+    # Used grid for table positioning
+    lblHeader.grid(row=0, column=0, columnspan=2, pady=10) #pady or padx is for padding
     
-def viewAcc():
+    lblID.grid(row=1, column=0, sticky="w", padx=20, pady=5) #sticky acts like justify 'w' means west 
+    txtID.grid(row=1, column=1, padx=20, pady=5)
+
+    lblFname.grid(row=2, column=0, sticky="w", padx=20, pady=5)
+    txtFname.grid(row=2, column=1, padx=20, pady=5)
+
+    lblLname.grid(row=3, column=0, sticky="w", padx=20, pady=5)
+    txtLname.grid(row=3, column=1, padx=20, pady=5)
+
+    lblNum.grid(row=4, column=0, sticky="w", padx=20, pady=5)
+    txtNum.grid(row=4, column=1, padx=20, pady=5)
+
+    btnCreate.grid(row=5, column=0, pady=20)
+    btnCancel.grid(row=5, column=1, pady=20)
+
+    #no need for main loop because this is a child window
+    
+    
+def viewWindow():
     print('view acc...')
     
-def updateAcc():
+def updateWindow():
     print('udpate acc...')
     
-def deleteAcc():
+def deleteWindow():
     print('delete acc...')
 
-def deposit():
+def depositWindow():
     print('deposit acc...')
     
-def withdraw():
+def withdrawWindow():
     print('withdraw acc...')
     
-def transfer():
+def transferWindow():
     print('transfer acc...')
     
-def changePass():
+def changePassWindow():
     print('change pass acc...')
    
 
@@ -45,10 +92,10 @@ def changePass():
 def userScreen():
     """Opens new window for account management"""
     sc = Tk()
-    logo = PhotoImage(file='logo.png')
-    titleLogo = PhotoImage(file='TamBank.png')
+    logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
+    titleLogo = PhotoImage(file = 'Tam-Bank/GUI/TamBank.png')
     sc.title('TamBank')
-    sc.geometry("1024x768+530+150")
+    sc.geometry("1024x768")
     sc.iconphoto(True, logo)
     sc.resizable(False, False)
     sc.config(bg='white')
@@ -59,18 +106,18 @@ def userScreen():
     header = Frame(sc, bg='white', width=1024, height=200)
     lblHeader = Label(header, image=titleLogo, bg='white')
 
-    # Menu Frame (Fixed Size)
+    # Body
     body = Frame(sc, bg='white', width=1024, height=568)
 
     # Buttons
-    btnCreate = Button(body, text='Create Account', width=15, height=5, font=btnFont, command=createAcc)
-    btnView = Button(body, text='View Account', width=15, height=5, font=btnFont, command=viewAcc)
-    btnUpdate = Button(body, text='Update Account', width=15, height=5, font=btnFont, command=updateAcc)
-    btnDelete = Button(body, text='Delete Account', width=15, height=5, font=btnFont, command=deleteAcc)
-    btnDeposit = Button(body, text='Deposit', width=15, height=5, font=btnFont, command=deposit)
-    btnWithdraw = Button(body, text='Withdraw', width=15, height=5, font=btnFont, command=withdraw)
-    btnTransfer = Button(body, text='Transfer', width=15, height=5, font=btnFont, command=transfer)
-    btnChangePass = Button(body, text='Change Password', width=15, height=5, font=btnFont, command= changePass)
+    btnCreate = Button(body, text='Create Account', width=15, height=5, font=btnFont, command=createWindow)
+    btnView = Button(body, text='View Account', width=15, height=5, font=btnFont, command=viewWindow)
+    btnUpdate = Button(body, text='Update Account', width=15, height=5, font=btnFont, command=updateWindow)
+    btnDelete = Button(body, text='Delete Account', width=15, height=5, font=btnFont, command=deleteWindow)
+    btnDeposit = Button(body, text='Deposit', width=15, height=5, font=btnFont, command = depositWindow)
+    btnWithdraw = Button(body, text='Withdraw', width=15, height=5, font=btnFont, command=withdrawWindow)
+    btnTransfer = Button(body, text='Transfer', width=15, height=5, font=btnFont, command=transferWindow)
+    btnChangePass = Button(body, text='Change Password', width=15, height=5, font=btnFont, command= changePassWindow)
 
     # Grid Layout
     header.grid(row=0, column=0, rowspan= 2, sticky="ew")
@@ -98,8 +145,8 @@ def loginScreen():
     
     #Login Screen Settings
     mainTitle = 'TamBank'
-    logo = PhotoImage(file = 'logo.png')
-    titleLogo = PhotoImage(file = 'TamBank.png')
+    logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
+    titleLogo = PhotoImage(file = 'Tam-Bank/GUI/TamBank.png')
     sc.title(mainTitle)
     sc.geometry("800x600+600+200")
     sc.iconphoto(True, logo)
@@ -128,4 +175,5 @@ def loginScreen():
     
     
 #-------------MAIN---------------
-loginScreen()
+# loginScreen() disabled for bypass muna
+userScreen()
