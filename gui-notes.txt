@@ -1,0 +1,15 @@
+interface.py -- latest gui 
+
+for admin menu:
+ID: admin
+pass: admin
+
+for user menu:
+ID: user
+pass: user
+
+To design each operation look for corresponding FRAME  
+ex: to add a button on update window (admin menu)
+
+btnSearch = Button(frmUpdate, font = btnfont, text = 'Search ID')
+                    ^^^^^^
