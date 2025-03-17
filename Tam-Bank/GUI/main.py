@@ -21,7 +21,7 @@ def createAcc(user):
     # Check for empty fields except 'id'
     for key, value in user.items():
         if key != 'id' and not value.strip():  # Skips ID field
-            messagebox.showerror('Error', f'{key.capitalize()} field cannot be empty.')
+            messagebox.showerror('Error', f'{key} field cannot be empty.')
             return
         
     if user['id']:
@@ -107,13 +107,13 @@ def createWindow():
     txtPass = Entry(scCreate, font=txtFont)
 
     fields = {
-        'id': txtID,
-        'fname': txtFname,
-        'lname': txtLname,
-        'num': txtNum,
-        'email': txtEmail,
-        'balance': txtBalance,
-        'pass': txtPass
+        'ID': txtID,
+        'First Name': txtFname,
+        'Last Name': txtLname,
+        'Phone Number': txtNum,
+        'Email': txtEmail,
+        'Balance': txtBalance,
+        'Password': txtPass
     }
 
     # Buttons
