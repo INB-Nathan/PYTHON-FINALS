@@ -92,7 +92,7 @@ class GUIinterface:
         registerScreen.title('Create Account')
         registerScreen.geometry('800x600')
         registerScreen.resizable(False, False)
-        registerScreen.grab_set() # Ensures login window cannot be accessed while this is active
+        registerScreen.grab_set()
 
         # header
         lblHeader = Label(registerScreen, text='Enter user details', font=('Arial', 24, 'bold'))
@@ -172,22 +172,18 @@ class GUIinterface:
 
     def _updateAccount(self, fields, window):
         try:
-            # Validate input fields
             for field, entry in fields.items():
                 if not entry.get().strip():
                     messagebox.showerror('Error', f'{field} field cannot be empty.')
                     return
 
-            # Extract input values
             fName = fields['First Name'].get()
             lName = fields['Last Name'].get()
             mobileNo = fields['Phone Number'].get()
             email = fields['Email'].get()
 
-            # Ensure accountNumber is passed correctly
             accountNumber = self.activeAccount.accountNumber
 
-            # Call update function from the bank system
             success, message = self.bank.updateAccount(fName, lName, mobileNo, email, accountNumber)
 
             if success:
@@ -455,7 +451,7 @@ class GUIinterface:
         except ValueError:
             messagebox.showerror("Error", "Enter a valid amount.")
                 
-    def _processWithdraw(self, amount_entry, balance_label):
+    def _processWithdraw(self, amount_entry, balanceLabel):
         """ withdraw transaction backend """
         try:
             amount_string = amount_entry.get()
@@ -470,7 +466,7 @@ class GUIinterface:
             if success:
                 messagebox.showinfo("Success", message)
                 self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-                balance_label.config(text=f"PHP {self.activeAccount.balance:.2f}")
+                balanceLabel.config(text=f"PHP {self.activeAccount.balance:.2f}")
                 amount_entry.delete(0, END)
             else:
                 messagebox.showerror("Error", message)
@@ -769,7 +765,119 @@ class GUIinterface:
         btnChangePass.pack(pady=10)
 
     def _setupCloseAccount(self, frame):
-        pass
+        """Create interface for closing an account"""
+        for widget in frame.winfo_children():
+            widget.destroy()
+            
+        header = Label(frame, text="Close Account", font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+        
+        warningFrame = Frame(frame, bg='#ffcccc', padx=20, pady=20)
+        warningFrame.pack(fill=X, padx=50, pady=10)
+        
+        warningLabel = Label(warningFrame, 
+                            text="⚠️ WARNING: Account closure is permanent! ⚠️", 
+                            font=('Helvetica', 16, 'bold'), 
+                            fg='red',
+                            bg='#ffcccc')
+        warningLabel.pack(pady=5)
+        
+        warningText = Label(warningFrame, 
+                        text="• Your account will be permanently closed\n"
+                                "• All data associated with this account will be marked as inactive\n"
+                                "• You must withdraw or transfer all funds before closing\n"
+                                "• You'll need to create a new account if you want to use TamBank again",
+                        font=('Helvetica', 12),
+                        justify=LEFT,
+                        bg='#ffcccc')
+        warningText.pack(pady=5, anchor=W)
+        
+        balanceFrame = Frame(frame)
+        balanceFrame.pack(fill=X, padx=50, pady=10)
+        
+        balanceLabel = Label(balanceFrame, 
+                            text=f"Current Balance: PHP {self.activeAccount.balance:.2f}",
+                            font=('Helvetica', 14, 'bold'))
+        balanceLabel.pack(anchor=W)
+        
+        if self.activeAccount.balance > 0:
+            balanceWarning = Label(balanceFrame, 
+                                text="You must withdraw all funds before closing your account",
+                                font=('Helvetica', 12),
+                                fg='red')
+            balanceWarning.pack(anchor=W)
+            
+            withdrawBtn = Button(balanceFrame, 
+                                text="Go to Withdraw", 
+                                command=lambda: self._showFrame('withdraw'),
+                                font=('Helvetica', 12))
+            withdrawBtn.pack(pady=10)
+        
+        confirmFrame = Frame(frame)
+        confirmFrame.pack(fill=X, padx=50, pady=20)
+        
+        passwordLabel = Label(confirmFrame, 
+                            text="Enter your password to confirm account closure:",
+                            font=('Helvetica', 12, 'bold'))
+        passwordLabel.pack(anchor=W, pady=5)
+        
+        passwordEntry = Entry(confirmFrame, show="*", font=('Helvetica', 12), width=30)
+        passwordEntry.pack(anchor=W)
+        
+        confirmVar = IntVar()
+        confirmCheck = Checkbutton(confirmFrame, 
+                                    text="I understand that closing my account is permanent and cannot be undone",
+                                    variable=confirmVar,
+                                    font=('Helvetica', 12))
+        confirmCheck.pack(anchor=W, pady=10)
+        
+        btnFrame = Frame(frame)
+        btnFrame.pack(pady=20)
+        
+        cancelBtn = Button(btnFrame, 
+                            text="Cancel", 
+                            font=('Helvetica', 14),
+                            padx=20,
+                            command=lambda: self._showFrame('account'))
+        cancelBtn.pack(side=LEFT, padx=10)
+        
+        closeBtn = Button(btnFrame, 
+                            text="Close Account", 
+                            font=('Helvetica', 14, 'bold'),
+                            bg='#f44336',
+                            fg='white',
+                            padx=20,
+                            command=lambda: self._processAccountClosure(passwordEntry
+                , confirmVar))
+        closeBtn.pack(side=LEFT, padx=10)
+
+    def _processAccountClosure(self, passwordEntry, confirmVar):
+        """Process the account closure request"""
+        if confirmVar.get() != 1:
+            messagebox.showerror("Error", "You must confirm that you understand the consequences of account closure")
+            return
+            
+        password = passwordEntry.get()
+        if not password:
+            messagebox.showerror("Error", "Please enter your password")
+            return
+            
+        success, _ = self.bank.authPass(self.activeAccount.accountNumber, password)
+        if not success:
+            messagebox.showerror("Error", "Invalid password")
+            return
+            
+        if self.activeAccount.balance > 0:
+            messagebox.showerror("Error", "You must withdraw all funds before closing your account")
+            return
+            
+        success, message = self.bank.closeAccount(self.activeAccount.accountNumber)
+        
+        if success:
+            messagebox.showinfo("Account Closed", message)
+            self._logout()
+        else:
+            messagebox.showerror("Error", f"Failed to close account: {message}")
 
     def _logout(self):
         self.activeAccount = None

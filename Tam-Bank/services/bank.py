@@ -214,21 +214,19 @@ class TamBank:
                     if row['from_account'] == accountNumber or row['to_account'] == accountNumber:
                         try:
                             amount = float(row['amount'])
-                            # Make amount negative if this account is sending money
                             if row["from_account"] == accountNumber and row["from_account"] != row["to_account"]:
                                 amount = -amount
                                 
-                            # Parse the date string
                             try:
                                 date_obj = datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
                             except ValueError:
-                                date_obj = datetime.now()  # Fallback
+                                date_obj = datetime.now()
                                 
                             transactions.append({ 
                                 "date": date_obj,
                                 "description": row['description'],
                                 "amount": amount,
-                                "transaction_id": row['transacId']  # Match key expected in interface
+                                "transaction_id": row['transacId']
                             })
                             print(f"Added transaction: {amount} - {row['description']}")
                         except Exception as e:
