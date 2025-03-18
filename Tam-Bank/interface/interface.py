@@ -145,6 +145,18 @@ class GUIinterface:
                 messagebox.showerror('Error', f'{field} field cannot be empty.')
                 return
         
+        # phone number validation
+        phone = fields['Phone Number'].get()
+        if not (phone.isdigit() and phone.startswith('09') and len(phone) == 11):
+            messagebox.showerror('Error', 'Invalid phone number. It should start with 09 and have 11 digits.')
+            return
+        
+        # email validation
+        email = fields['Email'].get()
+        if '@' not in email or '.' not in email:
+            messagebox.showerror('Error', 'Invalid email format.')
+            return
+        
         # password checkingi if d same
         if fields ['Password'].get() != fields['Confirm Password'].get():
             messagebox.showerror('Error', 'Passwords do not match.')
@@ -196,6 +208,16 @@ class GUIinterface:
             lName = fields['Last Name'].get()
             mobileNo = fields['Phone Number'].get()
             email = fields['Email'].get()
+            
+            # phone number validation
+            if not (mobileNo.isdigit() and mobileNo.startswith('09') and len(mobileNo) == 11):
+                messagebox.showerror('Error', 'Invalid phone number. It should start with 09 and have 11 digits.')
+                return
+
+            # email validation
+            if '@' not in email or '.' not in email:
+                messagebox.showerror('Error', 'Invalid email format.')
+                return
 
             accountNumber = self.activeAccount.accountNumber
 
