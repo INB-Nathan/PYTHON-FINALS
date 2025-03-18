@@ -192,7 +192,6 @@ class GUIinterface:
 
             if success:
                 messagebox.showinfo('Success', 'Account successfully updated!')
-                window.destroy()
             else:
                 messagebox.showerror('Error', message)
 
