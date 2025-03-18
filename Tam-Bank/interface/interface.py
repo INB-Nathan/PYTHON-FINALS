@@ -376,6 +376,8 @@ class GUIinterface:
         header = Label(frame, text='Account Details', font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
 
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+        
         detailsFrame = Frame(frame)
         detailsFrame.pack(pady=20, fill=X, padx = 50)
 
@@ -401,25 +403,14 @@ class GUIinterface:
             
             value_label = Label(rowFrame, text=str(value), font=('Helvetica', 14))
             value_label.pack(side=LEFT, padx=10)
-        
-        refreshBtn = Button(frame, text="Refresh", font=('Helvetica', 12),
-                        command=lambda: self._refreshAccountDetails(frame))
-        refreshBtn.pack(pady=20)
-
-    def _refreshAccountDetails(self, frame):
-        """ Refresh the account details to get newer and updated information """
-        for widget in frame.winfo_children():
-            widget.destroy()
-        
-        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-
-        self._setupAccountDetails(frame)
-        messagebox.showinfo('Success', 'Account details refreshed successfully.')
 
     def _setupDeposit(self, frame):
         """ interface for depositing"""
         header = Label(frame, text='Deposit Money', font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
+
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
 
         depoFrame = Frame(frame)
         depoFrame.pack(pady=20, padx=50)
@@ -438,21 +429,10 @@ class GUIinterface:
         amountEntry = Entry(amountFrame, font = ('Helvetica', 16), width = 20)
         amountEntry.pack(side = LEFT, padx = 10)
 
-        refreshBtn = Button(depoFrame, text="↻", font=('Helvetica', 12, 'bold'), command=lambda: self._refreshDetails(balVal))
-        refreshBtn.pack(side= LEFT)
-
         depositBtn = Button(depoFrame, text="Deposit", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processDeposit(amountEntry, balVal))
         depositBtn.pack(side = RIGHT)
 
-    def _refreshDetails(self, balLabel):
-        """ Refresh details in deposit frame """
-        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-
-        balLabel.config(text=f"PHP {self.activeAccount.balance:.2f}")
-        messagebox.showinfo('Success', 'Balance updated successfully.')
-
-
-    def _processDeposit(self, amount_entry, balance):
+    def _processDeposit(self, amount_entry, balanceLabel):
         """ deposit money into account """
         try:
             amount_string = amount_entry.get()
@@ -467,6 +447,7 @@ class GUIinterface:
             if success:
                 messagebox.showinfo("Success", message)
                 self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+                balanceLabel.config(text=f"PHP {self.activeAccount.balance:.2f}")
                 amount_entry.delete(0, END)  
             else:
                 messagebox.showerror("Error", message)
@@ -500,6 +481,8 @@ class GUIinterface:
         header = Label(frame, text='Withdraw Money', font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
 
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
         withdrawFrame = Frame(frame)
         withdrawFrame.pack(pady=20, padx=50)
         balFrame = Frame(withdrawFrame)
@@ -516,9 +499,6 @@ class GUIinterface:
         amountLabel.pack(side = LEFT)
         amountEntry = Entry(amountFrame, font = ('Helvetica', 16), width = 20)
         amountEntry.pack(side = LEFT, padx = 10)
-
-        refreshBtn = Button(withdrawFrame, text="↻", font=('Helvetica', 12, 'bold'), command=lambda: self._refreshDetails(balVal))
-        refreshBtn.pack(side= LEFT)
 
         withdrawBtn = Button(withdrawFrame, text="Withdraw", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processWithdraw(amountEntry, balVal))
         withdrawBtn.pack(side = RIGHT)
@@ -583,6 +563,8 @@ class GUIinterface:
         """Create interface for transferring funds between accounts"""
         header = Label(frame, text="Transfer Funds", font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
+
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
         
         transferFrame = Frame(frame)
         transferFrame.pack(pady=20, padx=50)
@@ -634,6 +616,8 @@ class GUIinterface:
         for widget in frame.winfo_children():
             widget.destroy()
             
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
         header = Label(frame, text="Transaction History", font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
         
@@ -717,6 +701,8 @@ class GUIinterface:
         header = Label(frame, text='Update Account', font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
 
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
         updateFrame = Frame(frame)
         updateFrame.pack(pady=20, fill=X, padx = 50)
 
@@ -752,6 +738,10 @@ class GUIinterface:
 
     def _setupChangePassword(self, frame):
         """ Setup change password functionality """
+
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
+
         header = Label(frame, text='Change Password', font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
     
@@ -790,6 +780,8 @@ class GUIinterface:
         """Create interface for closing an account"""
         for widget in frame.winfo_children():
             widget.destroy()
+
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
             
         header = Label(frame, text="Close Account", font=('Helvetica', 24, 'bold'))
         header.pack(pady=20)
