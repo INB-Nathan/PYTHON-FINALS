@@ -1,7 +1,6 @@
 import os
 import csv
 from datetime import datetime
-from models.account import Account
 
 class fileHandling:
     """ File handling of details to .csv files """
@@ -34,6 +33,7 @@ class fileHandling:
     @staticmethod
     def loadFile():
         """ Load the account details from the .csv file """
+        from models.account import Account
         # intialize as empty list
         accounts = []
 

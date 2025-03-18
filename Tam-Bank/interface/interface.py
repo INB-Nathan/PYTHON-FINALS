@@ -5,9 +5,9 @@ from tkinter import ttk
 class GUIinterface:
     """ GUI interface """
 
-    def __init__(self, bank):
+    def __init__(self, bankService):
         """ Initialize the GUI interface with a reference to the TAMBANK object """
-        self.bank = bank
+        self.bank = bankService
         self.activeAccount = None
         self.mainWindow = None
         self.frames = {}
@@ -17,7 +17,7 @@ class GUIinterface:
         self.loginScreen()
 
     def loginScreen(self):
-        """First screen to authenticate users"""\
+        """First screen to authenticate users"""
         # Styling Variables
         defaultFont = ('Helvetica', 20, 'bold')
         btnFont = ('Helvetica', 12, 'bold')
@@ -52,8 +52,8 @@ class GUIinterface:
         lblPassword = Label(self.mainWindow, text = 'Password:', font = defaultFont)
         txtID = Entry(self.mainWindow, font = defaultFont)
         txtPass = Entry(self.mainWindow, font = defaultFont, show= '*')
-        btnLogin = Button(self.mainWindow, text = 'Login', font = btnFont, padx = 15, command = lambda: self.authenticate(txtID, txtPass))
-        btnRegister = Button(self.mainWindow, text = 'Register', font = btnFont, padx = 15, command = lambda: self.createWindow())
+        btnLogin = Button(self.mainWindow, text = 'Login', font = btnFont, padx = 15, command = lambda: self._authenticate(txtID, txtPass))
+        btnRegister = Button(self.mainWindow, text = 'Register', font = btnFont, padx = 15, command = lambda: self._showRegisterScreen())
 
         # place the widgets
         lblAccountID.place(x = 160, y = 300)
@@ -126,7 +126,7 @@ class GUIinterface:
         """ register a new account with the bank service """
         # create basic validation first
         for field, entry in fields.items():
-            if not entry.get().strip() and field != 'Initial Balance':
+            if not entry.get().strip() and field != 'Balance':
                 messagebox.showerror('Error', f'{field} field cannot be empty.')
                 return
         
@@ -135,14 +135,18 @@ class GUIinterface:
             messagebox.showerror('Error', 'Passwords do not match.')
             return
         
-        # checking if the password length is viable and has alphanumeric characters and special characters
-        if len(fields['Password'].get()) < 6 and not any(char.isdigit() for char in fields['Password'].get()) and not any(char.isalpha() for char in fields['Password'].get() and not any(char.isalnum() for char in fields['Password'].get())):
+        password = fields['Password'].get()
+        has_digit = any(char.isdigit() for char in password)
+        has_letter = any(char.isalpha() for char in password)
+        has_special = any(not char.isalnum() for char in password)
+
+        if len(password) < 6 or not has_digit or not has_letter or not has_special:
             messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
             return
 
         # initial balance checker
         try:
-            initialBal = float(fields['Initial Balance'].get() if fields['Initial Balance'].get() else 0)
+            initialBal = float(fields['Balance'].get() if fields['Balance'].get() else 0)
             if initialBal < 0:
                 messagebox.showerror('Error', 'Initial balance cannot be negative.')
                 return
@@ -167,9 +171,9 @@ class GUIinterface:
             messagebox.showerror('Error', f'Failed to create account: str(e)')
 
     def showUserScreen(self):
-        """ display the user dashboard """
+        """ Display the user dashboard with button-based navigation """
         self.mainWindow = Tk()
-        self.mainWindow.title(f'Tambank - Welcome {self.activeAccount.firstName}')
+        self.mainWindow.title(f'Tambank - Welcome {self.activeAccount.fName}!')
         self.mainWindow.geometry('1024x768')
         self.mainWindow.resizable(True, True)
 
@@ -179,40 +183,96 @@ class GUIinterface:
         except:
             self.logo = None
 
-        # create a notebook
-        # notebook is a tabbed widget that allows multiple pages to be displayed in the same window
-        notebook = ttk.Notebook(self.mainWindow)
-        notebook.pack(fill = BOTH, expand = 1, padx=10, pady=10)
+        # Create main container frames
+        headerFrame = Frame(self.mainWindow, bg='#f0f0f0')
+        headerFrame.pack(fill=X, padx=10, pady=5)
+        
+        contentFrame = Frame(self.mainWindow)
+        contentFrame.pack(fill=BOTH, expand=True, padx=10, pady=5)
+        
+        # Create the frames for different sections
+        accountFrame = Frame(contentFrame)
+        depositFrame = Frame(contentFrame)
+        withdrawFrame = Frame(contentFrame)
+        transferFrame = Frame(contentFrame)
+        accountHistoryFrame = Frame(contentFrame)
+        changeUpdateFrame = Frame(contentFrame)
+        changePassFrame = Frame(contentFrame)
+        closeFrame = Frame(contentFrame)
+        
+        # Store all frames in a dictionary for easy access
+        self.frames = {
+            'account': accountFrame,
+            'deposit': depositFrame,
+            'withdraw': withdrawFrame,
+            'transfer': transferFrame,
+            'history': accountHistoryFrame,
+            'password': changePassFrame,
+            'close': closeFrame
+        }
+        
+        # Create navigation buttons
+        btnFont = ('Helvetica', 11, 'bold')
+        activeColor = '#4CAF50'
+        normalColor = '#f0f0f0'
+        
+        btnAccount = Button(headerFrame, text='Account Details', font=btnFont, 
+                        command=lambda: self._showFrame('account'),
+                        relief=RAISED, bd=2, padx=5)
+        btnDeposit = Button(headerFrame, text='Deposit', font=btnFont,
+                        command=lambda: self._showFrame('deposit'),
+                        relief=RAISED, bd=2, padx=5)
+        btnWithdraw = Button(headerFrame, text='Withdraw', font=btnFont,
+                        command=lambda: self._showFrame('withdraw'),
+                        relief=RAISED, bd=2, padx=5)
+        btnTransfer = Button(headerFrame, text='Transfer', font=btnFont,
+                        command=lambda: self._showFrame('transfer'),
+                        relief=RAISED, bd=2, padx=5)
+        btnHistory = Button(headerFrame, text='Transaction History', font=btnFont,
+                        command=lambda: self._showFrame('history'),
+                        relief=RAISED, bd=2, padx=5)
+        btnUpdate = Button(headerFrame, text='Update Details', font=btnFont,
+                        command=lambda: self._showFrame('update'),
+                        relief=RAISED, bd=2, padx=5)
+        btnPassword = Button(headerFrame, text='Change Password', font=btnFont,
+                        command=lambda: self._showFrame('password'),
+                        relief=RAISED, bd=2, padx=5)
+        btnClose = Button(headerFrame, text='Close Account', font=btnFont,
+                        command=lambda: self._showFrame('close'),
+                        relief=RAISED, bd=2, padx=5)
 
-        # create the frames
-        accountFrame = Frame(notebook)
-        depositFrame = Frame(notebook)
-        withdrawFrame = Frame(notebook)
-        transferFrame = Frame(notebook)
-        accountHistoryFrame = Frame(notebook)
-        changePassFrame = Frame(notebook)
-        closeFrame = Frame(notebook)
-
-        notebook.add(accountFrame, text = 'Account Details')
-        notebook.add(depositFrame, text = 'Deposit')
-        notebook.add(withdrawFrame, text = 'Withdraw')
-        notebook.add(transferFrame, text = 'Transfer')
-        notebook.add(accountHistoryFrame, text = 'Account History')
-        notebook.add(changePassFrame, text = 'Change Password')
-        notebook.add(closeFrame, text = 'Close Account')
-
+        btnAccount.pack(side=LEFT, padx=5, pady=5)
+        btnDeposit.pack(side=LEFT, padx=5, pady=5)
+        btnWithdraw.pack(side=LEFT, padx=5, pady=5)
+        btnTransfer.pack(side=LEFT, padx=5, pady=5)
+        btnHistory.pack(side=LEFT, padx=5, pady=5)
+        btnUpdate.pack(side=LEFT, padx=5, pady=5)
+        btnPassword.pack(side=LEFT, padx=5, pady=5)
+        btnClose.pack(side=LEFT, padx=5, pady=5)
+        
         self._setupAccountDetails(accountFrame)
         self._setupDeposit(depositFrame)
         self._setupWithdraw(withdrawFrame)
         self._setupTransfer(transferFrame)
         self._setupAccountHistory(accountHistoryFrame)
+        self._setupUpdateDetails(changeUpdateFrame)
         self._setupChangePassword(changePassFrame)
         self._setupCloseAccount(closeFrame)
-
-        logoutbtn = Button(self.mainWindow, text = 'Logout', font = ('Helvetica', 12, 'bold'), command = self.logout)
+        
+        logoutbtn = Button(self.mainWindow, text = 'Logout', font = ('Helvetica', 12, 'bold'), command = self._logout)
         logoutbtn.pack(pady=10)
-
+        
+        self._showFrame('account')
+        
         self.mainWindow.mainloop()
+
+    def _showFrame(self, frame_name):
+        """ Show the selected frame and hide others """
+        for frame in self.frames.values():
+            frame.pack_forget()
+        
+        self.frames[frame_name].pack(fill=BOTH, expand=True)
+
 
     def _setupAccountDetails(self, frame):
         pass
@@ -227,6 +287,9 @@ class GUIinterface:
         pass
 
     def _setupAccountHistory(self, frame):
+        pass
+
+    def _setupUpdateDetails(self, frame):
         pass
 
     def _setupChangePassword(self, frame):
