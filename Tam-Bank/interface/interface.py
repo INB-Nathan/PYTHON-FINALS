@@ -168,7 +168,7 @@ class GUIinterface:
             messagebox.showinfo('Success', f'Account successfully created!\nYour account number is: {account.accountNumber}\n' f'Login to continue.')
             window.destroy()
         except Exception as e:
-            messagebox.showerror('Error', f'Failed to create account: str(e)')
+            messagebox.showerror('Error', f'Failed to create account: {str(e)}')
 
     def _updateAccount(self, fields, window):
         try:
@@ -197,7 +197,39 @@ class GUIinterface:
 
         except Exception as e:
             messagebox.showerror('Error', f'Failed to update account: {str(e)}')
-            print(f"Exception occurred: {e}")  # Debugging
+            print(f"Exception occurred: {e}")
+    
+    def _depositFunds(self, txtAmount):
+        """ Handle deposit action """
+        try:
+            amount = float(txtAmount.get())
+            if amount <= 0:
+                messagebox.showerror('Error', 'Deposit amount must be greater than zero.')
+                return
+    
+            success, message = self.bank.deposit(self.activeAccount.accountNumber, amount)
+            if success:
+                messagebox.showinfo('Success', message)
+            else:
+                messagebox.showerror('Error', message)
+        except ValueError:
+            messagebox.showerror('Error', 'Invalid amount entered.')
+    
+    def _withdrawFunds(self, txtAmount):
+        """ Handle withdraw action """
+        try:
+            amount = float(txtAmount.get())
+            if amount <= 0:
+                messagebox.showerror('Error', 'Withdrawal amount must be greater than zero.')
+                return
+    
+            success, message = self.bank.withdraw(self.activeAccount.accountNumber, amount)
+            if success:
+                messagebox.showinfo('Success', message)
+            else:
+                messagebox.showerror('Error', message)
+        except ValueError:
+            messagebox.showerror('Error', 'Invalid amount entered.')
 
     def showUserScreen(self):
         """ Display the user dashboard with button-based navigation """
@@ -341,10 +373,41 @@ class GUIinterface:
 
     
     def _setupDeposit(self, frame):
-        pass
+        """ Setup deposit functionality """
+        header = Label(frame, text='Deposit Funds', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+    
+        amountFrame = Frame(frame)
+        amountFrame.pack(pady=10)
+    
+        lblAmount = Label(amountFrame, text='Amount:', font=('Helvetica', 14, 'bold'))
+        lblAmount.pack(side=LEFT)
+    
+        txtAmount = Entry(amountFrame, font=('Helvetica', 14))
+        txtAmount.pack(side=LEFT, padx=10)
+    
+        btnDeposit = Button(frame, text='Deposit', font=('Helvetica', 12),
+                            command=lambda: self._depositFunds(txtAmount))
+        btnDeposit.pack(pady=10)
+    
 
     def _setupWithdraw(self, frame):
-        pass
+        """ Setup withdraw functionality """
+        header = Label(frame, text='Withdraw Funds', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+    
+        amountFrame = Frame(frame)
+        amountFrame.pack(pady=10)
+    
+        lblAmount = Label(amountFrame, text='Amount:', font=('Helvetica', 14, 'bold'))
+        lblAmount.pack(side=LEFT)
+    
+        txtAmount = Entry(amountFrame, font=('Helvetica', 14))
+        txtAmount.pack(side=LEFT, padx=10)
+    
+        btnWithdraw = Button(frame, text='Withdraw', font=('Helvetica', 12),
+                            command=lambda: self._withdrawFunds(txtAmount))
+        btnWithdraw.pack(pady=10)
 
     def _setupTransfer(self, frame):
         pass
