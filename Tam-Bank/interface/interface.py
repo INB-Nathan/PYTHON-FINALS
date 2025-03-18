@@ -346,6 +346,28 @@ class GUIinterface:
         for frame in self.frames.values():
             frame.pack_forget()
         
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
+        for widget in self.frames[frame_name].winfo_children():
+            widget.destroy()
+
+        if frame_name == 'account':
+            self._setupAccountDetails(self.frames[frame_name])
+        elif frame_name == 'deposit':
+            self._setupDeposit(self.frames[frame_name])
+        elif frame_name == 'withdraw':
+            self._setupWithdraw(self.frames[frame_name])
+        elif frame_name == 'transfer':
+            self._setupTransfer(self.frames[frame_name])
+        elif frame_name == 'history':
+            self._setupAccountHistory(self.frames[frame_name])
+        elif frame_name == 'update':
+            self._setupUpdateDetails(self.frames[frame_name])
+        elif frame_name == 'password':
+            self._setupChangePassword(self.frames[frame_name])
+        elif frame_name == 'close':
+            self._setupCloseAccount(self.frames[frame_name])
+        
         self.frames[frame_name].pack(fill=BOTH, expand=True)
 
 
