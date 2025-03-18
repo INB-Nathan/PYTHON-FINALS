@@ -275,7 +275,40 @@ class GUIinterface:
 
 
     def _setupAccountDetails(self, frame):
-        pass
+        """ Display account details """
+        header = Label(frame, text='Account Details', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+
+        detailsFrame = Frame(frame)
+        detailsFrame.pack(pady=20, fill=X, padx = 50)
+
+        account = self.activeAccount
+
+        fields = [
+            ('Account Number', account.accountNumber),
+            ('First Name', account.fName),
+            ('Last Name', account.lName),
+            ('Phone Number', account.mobileNo),
+            ('Email', account.email),
+            ('Balance', f'${account.balance:.2f}'),
+            ('Date Opened', account.dateOpened.strftime('%Y-%m-%d')),
+            ('Status', account.status)
+        ]
+
+        for i, (labelText, value) in enumerate(fields):
+            rowFrame = Frame(detailsFrame)
+            rowFrame.pack(fill=X, pady=5)
+            
+            label = Label(rowFrame, text=f"{labelText}:", font=('Helvetica', 14, 'bold'), width=15, anchor='w')
+            label.pack(side=LEFT)
+            
+            value_label = Label(rowFrame, text=str(value), font=('Helvetica', 14))
+            value_label.pack(side=LEFT, padx=10)
+        
+        refresh_btn = Button(frame, text="Refresh", font=('Helvetica', 12),
+                        command=lambda: self._refreshAccountDetails(frame))
+        refresh_btn.pack(pady=20)
+
     
     def _setupDeposit(self, frame):
         pass
