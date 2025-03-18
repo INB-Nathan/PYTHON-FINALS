@@ -514,7 +514,6 @@ class GUIinterface:
 
     def _logout(self):
         self.activeAccount = None
-        self.mainWindow.destroy()
         self.loginScreen()
 
 
