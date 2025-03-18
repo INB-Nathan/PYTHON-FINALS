@@ -35,32 +35,18 @@ class Account:
             return False
         return Password.verifyPass(password, self.passHash)
 
-    def depositAcc(self,amount):
-        """ Deposit money into account """
-        if amount <= 0:
-            return False, "Deposit amount must be greater than 0"
-        if self.status != "Active":
-            return False, f"Cannot deposit to {self.status} account"
-        self.balance += amount
-        self._recordTransaction("Deposit", amount)
-
-        fileHandling.saveTransactions(self.accountNumber, [self.transactions[-1]])
-        return True, f"Deposited PHP{amount:.2f}. New balance: PHP{self.balance:.2f}"
-
-    def withdrawAcc(self,amount):
-        """ Withdraw money from account """
-        if amount <= 0:
-            return False, "Withdrawal amount must be greater than 0"
-        if self.status != "Active":
-            return False, f"Cannot withdraw from {self.status} account"
-        if amount > self.balance:
-            return False, f"Insufficient funds. Current balance : PHP{self.balance:.2f}"
+    def depositAcc(self, amount):
+        """Delegate to Bank deposit method"""
+        from services.bank import Bank 
+        bank = Bank()
+        return bank.deposit(self.accountNumber, amount)
         
-        self.balance -= amount
-        self._recordTransaction("Withdrawal", -amount)
+    def withdrawAcc(self, amount):
+        """Delegate to Bank withdraw method"""
+        from services.bank import Bank
+        bank = Bank()
+        return bank.withdraw(self.accountNumber, amount)
 
-        fileHandling.saveTransactions(self.accountNumber, [self.transactions[-1]])
-        return True, f"Withdrew PHP{amount:.2f}. New balance: PHP{self.balance:.2f}"
 
     def _recordTransaction(self, description, amount):
         """ Record the transaction """
@@ -75,7 +61,9 @@ class Account:
 
     def getHistory(self):
         """ Get the transaction history of the account based from transactions.csv """
-        return self.transactions
+        from services.bank import TamBank
+        bank = TamBank()
+        return bank.getAccountTransactions(self.accountNumber)
     
     def closeAcc(self):
         """ Delete the account from the .csv file but maintain the transactions especially bank transfers. """

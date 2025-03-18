@@ -112,7 +112,6 @@ class TamBank:
             
         success, message = account.closeAcc()
         if success:
-            # Update account status in file
             self._saveAccounts()
         
         return success, message
@@ -123,11 +122,17 @@ class TamBank:
         if not account:
             return False, "Account not found"
         
-        success, message = account.depositAcc(float(amount))
-        if success:
-            self._saveAccounts()
+        amount = float(amount) if not isinstance(amount, float) else amount
+
+        if float(amount) <= 0:
+            return False, "Deposit amount must be greater than 0"
         
-        return success, message
+        account.balance += amount
+
+        self._saveTransaction(accountNumber, accountNumber, amount, "Deposit")
+        self._saveAccounts()
+
+        return True, f"Deposited PHP {amount:.2f}."
     
     def withdraw(self, accountNumber, amount):
         """Withdraw from an account"""
@@ -135,20 +140,104 @@ class TamBank:
         if not account:
             return False, "Account not found"
         
-        success, message = account.withdrawAcc(float(amount))
-        if success:
-            self._saveAccounts()
+        amount = float(amount) if not isinstance(amount, float) else amount
+
+        if amount <= 0:
+            return False, "Deposit amount must be greater than 0"
         
-        return success, message
+        if account.balance < amount:
+            return False, "Insufficient funds"
+        
+        account.balance -= amount
+
+        self._saveTransaction(accountNumber, "CASH", amount, "Withdrawal")
+        self._saveAccounts()
+
+        return True, f"Withdrawed PHP {float(amount):.2f}."
     
     def transaction(self, accountNumber, toAccount, amount, description):
         """Transfer between accounts"""
-        account = self.getAccount(accountNumber)
-        if not account:
-            return False, "Account not found"
+        fromAccount = self.getAccount(accountNumber)
+        if not fromAccount:
+            return False, "Sender account not found"
         
-        success, message = account.transferAcc(toAccount, float(amount), description)
-        if success:
-            self._saveAccounts()
+        toAcc = self.getAccount(toAccount)
+        if not toAcc:
+            return False, "Recipient account not found"
         
-        return success, message
+        if fromAccount.balance < float(amount):
+            return False, "Insufficient funds"
+        
+        fromAccount.balance -= float(amount)
+        toAcc.balance += float(amount)
+        
+        self._saveTransaction(accountNumber, toAccount, float(amount), description)
+        self._saveAccounts()
+        
+        return True, f"Successfully transferred PHP {float(amount):.2f} to account {toAccount}"
+    
+    def _saveTransaction(self, fromAccount, toAccount, amount, description):
+        """ save transactions to transac.csv"""
+        import csv, os
+        from datetime import datetime
+
+        transacPath = "Tam-Bank/userinfo/transactions.csv"
+
+        transacId = self._generateTransacId()
+        currentDate = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        fileExists = os.path.isfile(transacPath) and os.path.getsize(transacPath) > 0
+        with open(transacPath, 'a', newline='') as file:
+            writer = csv.writer(file)
+            if not fileExists:
+                writer.writerow(['transacId', 'date', 'from_account', 'to_account', 'amount', 'description'])
+            
+            writer.writerow([transacId, currentDate, fromAccount, toAccount, amount, description])
+    
+    def _generateTransacId(self):
+        """ Generate a unique transaction ID """
+        return random.randint(100000, 999999)
+    
+    def getAccountTransactions(self, accountNumber):
+        """ get all transactions """
+        import csv, os
+        from datetime import datetime
+
+        transacPath = "Tam-Bank/userinfo/transactions.csv"
+        
+        transactions = []
+        
+        try:
+            with open(transacPath, 'r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if row['from_account'] == accountNumber or row['to_account'] == accountNumber:
+                        try:
+                            amount = float(row['amount'])
+                            # Make amount negative if this account is sending money
+                            if row["from_account"] == accountNumber and row["from_account"] != row["to_account"]:
+                                amount = -amount
+                                
+                            # Parse the date string
+                            try:
+                                date_obj = datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                            except ValueError:
+                                date_obj = datetime.now()  # Fallback
+                                
+                            transactions.append({ 
+                                "date": date_obj,
+                                "description": row['description'],
+                                "amount": amount,
+                                "transaction_id": row['transacId']  # Match key expected in interface
+                            })
+                            print(f"Added transaction: {amount} - {row['description']}")
+                        except Exception as e:
+                            print(f"Error processing transaction row: {e}")
+                            print(f"Row data: {row}")
+
+                print(f"Loaded {len(transactions)} transactions for account {accountNumber}")
+        except Exception as e:
+            print(f"Error loading transactions: {e}")
+
+        transactions.sort(key=lambda x: x['date'], reverse=True)
+        return transactions

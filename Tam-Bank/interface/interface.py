@@ -183,14 +183,12 @@ class GUIinterface:
         except:
             self.logo = None
 
-        # Create main container frames
         headerFrame = Frame(self.mainWindow, bg='#f0f0f0')
         headerFrame.pack(fill=X, padx=10, pady=5)
         
         contentFrame = Frame(self.mainWindow)
         contentFrame.pack(fill=BOTH, expand=True, padx=10, pady=5)
         
-        # Create the frames for different sections
         accountFrame = Frame(contentFrame)
         depositFrame = Frame(contentFrame)
         withdrawFrame = Frame(contentFrame)
@@ -200,7 +198,6 @@ class GUIinterface:
         changePassFrame = Frame(contentFrame)
         closeFrame = Frame(contentFrame)
         
-        # Store all frames in a dictionary for easy access
         self.frames = {
             'account': accountFrame,
             'deposit': depositFrame,
@@ -290,7 +287,7 @@ class GUIinterface:
             ('Last Name', account.lName),
             ('Phone Number', account.mobileNo),
             ('Email', account.email),
-            ('Balance', f'${account.balance:.2f}'),
+            ('Balance', f'PHP {account.balance:.2f}'),
             ('Date Opened', account.dateOpened.strftime('%Y-%m-%d')),
             ('Status', account.status)
         ]
@@ -305,9 +302,9 @@ class GUIinterface:
             value_label = Label(rowFrame, text=str(value), font=('Helvetica', 14))
             value_label.pack(side=LEFT, padx=10)
         
-        refresh_btn = Button(frame, text="Refresh", font=('Helvetica', 12),
+        refreshBtn = Button(frame, text="Refresh", font=('Helvetica', 12),
                         command=lambda: self._refreshAccountDetails(frame))
-        refresh_btn.pack(pady=20)
+        refreshBtn.pack(pady=20)
 
     def _refreshAccountDetails(self, frame):
         """ Refresh the account details to get newer and updated information """
@@ -331,7 +328,7 @@ class GUIinterface:
         balFrame.pack(fill = X, pady=10)
         balLabel = Label(balFrame, text = 'Current Balance:', font = ('Helvetica', 16, 'bold'))
         balLabel.pack(side = LEFT)
-        balVal = Label(balFrame, text = f"${self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
+        balVal = Label(balFrame, text = f"PHP {self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
         balVal.pack(side = LEFT, padx = 10)
 
         amountFrame = Frame(depoFrame)
@@ -351,43 +348,48 @@ class GUIinterface:
         """ Refresh details in deposit frame """
         self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
 
-        balLabel.config(text=f"${self.activeAccount.balance:.2f}")
+        balLabel.config(text=f"PHP {self.activeAccount.balance:.2f}")
         messagebox.showinfo('Success', 'Balance updated successfully.')
 
 
-    def _processDeposit(self, amount, balance):
-        """ desposit money into account """
+    def _processDeposit(self, amount_entry, balance):
+        """ deposit money into account """
         try:
-            amount = float(amount.get())
-            if amount <= 0:
+            amount_string = amount_entry.get()
+            amount_value = float(amount_string)
+
+            if amount_value <= 0:
                 messagebox.showerror("Error", "Amount must be greater than 0.")
                 return
-            success, message = self.bank.deposit(self.activeAccount.accountNumber, amount)
+                
+            success, message = self.bank.deposit(self.activeAccount.accountNumber, amount_value)
 
             if success:
                 messagebox.showinfo("Success", message)
-                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber, amount)
-                balance.config(text=f"${self.activeAccount.balance:.2f}")
-                amount.delete(0, END)
+                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+                amount_entry.delete(0, END)  
             else:
                 messagebox.showerror("Error", message)
         except ValueError:
             messagebox.showerror("Error", "Enter a valid amount.")
                 
-    def _processWithdraw(self, amount, balLabel):
+    def _processWithdraw(self, amount_entry, balance_label):
         """ withdraw transaction backend """
         try:
-            amount = float(amount.get())
-            if amount <= 0:
+            amount_string = amount_entry.get()
+            amount_value = float(amount_string)
+            
+            if amount_value <= 0:
                 messagebox.showerror("Error", "Amount must be greater than 0.")
                 return
-            success, message = self.bank.withdraw(self.activeAccount.accountNumber, amount)
+                
+            success, message = self.bank.withdraw(self.activeAccount.accountNumber, amount_value)
 
             if success:
                 messagebox.showinfo("Success", message)
-                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber, amount)
-                balLabel.config(text=f"${self.activeAccount.balance:.2f}")
-                amount.delete(0, END)
+                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+                balance_label.config(text=f"PHP {self.activeAccount.balance:.2f}")
+                amount_entry.delete(0, END)
             else:
                 messagebox.showerror("Error", message)
         except ValueError:
@@ -405,7 +407,7 @@ class GUIinterface:
 
         balLabel = Label(balFrame, text = 'Current Balance:', font = ('Helvetica', 16, 'bold'))
         balLabel.pack(side = LEFT)
-        balVal = Label(balFrame, text = f"${self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
+        balVal = Label(balFrame, text = f"PHP {self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
         balVal.pack(side = LEFT, padx = 10)
 
         amountFrame = Frame(withdrawFrame)
@@ -421,56 +423,194 @@ class GUIinterface:
         withdrawBtn = Button(withdrawFrame, text="Withdraw", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processWithdraw(amountEntry, balVal))
         withdrawBtn.pack(side = RIGHT)
 
-    def _processTransfer(self, toAcc, amount, desc, balVal):
+    def _processTransfer(self, toAccEntry, amountEntry, descEntry, balVal):
         """ transfer money between accounts """
-        
+    
         # first check the account
         try:
-            toAcc = self.bank.getAccount(toAcc).strip()
-            if not toAcc:
+            toAcc_number = toAccEntry.get().strip()
+            
+            if not toAcc_number:
                 messagebox.showerror("Error", "Account not found.")
                 return
-            amount = float(amount.get())
-            if amount <= 0:
+            
+            recipAcc = self.bank.getAccount(toAcc_number)
+            if not recipAcc:
+                messagebox.showerror("Error", "Recipient account not found.")
+                return
+            
+            if toAcc_number == self.activeAccount.accountNumber:
+                messagebox.showerror("Error", "Cannot transfer to own account.")
+                return
+            
+            amount_value = float(amountEntry.get())
+            
+            if amount_value <= 0:
                 messagebox.showerror("Error", "Amount must be greater than 0.")
                 return
             
-            if amount > self.activeAccount.balance:
+            if amount_value > self.activeAccount.balance:
                 messagebox.showerror("Error", "Insufficient funds.")
                 return
             
-            description = desc.get().strip()
+            description = descEntry.get().strip()
             if not description:
-                description = f'Transfer to {toAcc}'
+                description = f'Transfer to {toAcc_number}'
             
-            confirm = messagebox.askyesno("Confirm Transfer", f"Transfer ${amount:.2f} to account {toAcc}?\nDescription: {description}")
+            confirm = messagebox.askyesno("Confirm Transfer", 
+                                        f"Transfer PHP {amount_value:.2f} to account {toAcc_number}?\nDescription: {description}")
             if not confirm:
                 return
             
-            sucess, message = self.bank.transaction(
-                self.activeAccount.accountNumber, toAcc, amount, description
+            success, message = self.bank.transaction(
+                self.activeAccount.accountNumber, toAcc_number, amount_value, description
             )
 
-            if sucess:
+            if success:
                 messagebox.showinfo("Success", message)
                 self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-                balVal.config(text=f"${self.activeAccount.balance:.2f}")
-                toAcc.delete(0,END)
-                amount.delete(0,END)
-                desc.delete(0,END)
+                balVal.config(text=f"PHP {self.activeAccount.balance:.2f}")
+                toAccEntry.delete(0, END)
+                amountEntry.delete(0, END)
+                descEntry.delete(0, END)
             else:
                 messagebox.showerror("Error", message)
 
         except ValueError:
-            messagebox.showerror("Erorr", "Enter a valid amount.")
-    
-
+            messagebox.showerror("Error", "Enter a valid amount.")
 
     def _setupTransfer(self, frame):
-        pass
+        """Create interface for transferring funds between accounts"""
+        header = Label(frame, text="Transfer Funds", font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+        
+        transferFrame = Frame(frame)
+        transferFrame.pack(pady=20, padx=50)
+
+        balFrame = Frame(transferFrame)
+        balFrame.pack(fill=X, pady=10)
+        balLabel = Label(balFrame, text="Your Balance:", font=('Helvetica', 16, 'bold'))
+        balLabel.pack(side=LEFT)
+        balValue = Label(balFrame, text=f"PHP {self.activeAccount.balance:.2f}", font=('Helvetica', 16))
+        balValue.pack(side=LEFT, padx=10)
+        
+        
+        toFrame = Frame(transferFrame)
+        toFrame.pack(fill=X, pady=10)
+        
+        toLabel = Label(toFrame, text="To Account:", font=('Helvetica', 16, 'bold'))
+        toLabel.pack(side=LEFT)
+        
+        toEntry = Entry(toFrame, font=('Helvetica', 16), width=20)
+        toEntry.pack(side=LEFT, padx=10)
+        
+        amountFrame = Frame(transferFrame)
+        amountFrame.pack(fill=X, pady=10)
+        
+        amountLabel = Label(amountFrame, text="Amount:", font=('Helvetica', 16, 'bold'))
+        amountLabel.pack(side=LEFT)
+        
+        amountEntry = Entry(amountFrame, font=('Helvetica', 16), width=20)
+        amountEntry.pack(side=LEFT, padx=10)
+        
+        descFrame = Frame(transferFrame)
+        descFrame.pack(fill=X, pady=10)
+        
+        descLabel = Label(descFrame, text="Description:", font=('Helvetica', 16, 'bold'))
+        descLabel.pack(side=LEFT)
+        
+        descEntry = Entry(descFrame, font=('Helvetica', 16), width=20)
+        descEntry.pack(side=LEFT, padx=10)
+
+        refreshBtn = Button(balFrame, text="↻", font=('Helvetica', 12, 'bold'), 
+                        command=lambda: self._refreshDetails(balValue))
+        refreshBtn.pack(side=LEFT)
+        
+        transfer_btn = Button(transferFrame, text="Transfer", font=('Helvetica', 14, 'bold'), bg='#2196F3', fg='white', padx=20, pady=5, command=lambda: self._processTransfer(toEntry, amountEntry, descEntry, balValue))
+        transfer_btn.pack(side = RIGHT)
 
     def _setupAccountHistory(self, frame):
-        pass
+        """Create transaction history interface"""
+        for widget in frame.winfo_children():
+            widget.destroy()
+            
+        header = Label(frame, text="Transaction History", font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+        
+        treeFrame = Frame(frame)
+        treeFrame.pack(fill=BOTH, expand=True, padx=20, pady=10)
+        
+        columns = ('date', 'description', 'amount', 'transacId')
+        tree = ttk.Treeview(treeFrame, columns=columns, show='headings')
+        
+        tree.heading('date', text='Date')
+        tree.heading('description', text='Description')
+        tree.heading('amount', text='Amount')
+        tree.heading('transacId', text='Transaction ID')
+        
+        tree.column('date', width=150)
+        tree.column('description', width=250)
+        tree.column('amount', width=150)
+        tree.column('transacId', width=150)
+        
+        y_scrollbar = ttk.Scrollbar(treeFrame, orient=VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=y_scrollbar.set)
+        
+        y_scrollbar.pack(side=RIGHT, fill=Y)
+        tree.pack(side=LEFT, fill=BOTH, expand=True)
+        
+        try:
+            transactions = self.bank.getAccountTransactions(self.activeAccount.accountNumber)
+            
+            if not transactions:
+                tree.insert('', 'end', values=('', 'No transactions found', '', ''))
+            else:
+                for transaction in transactions:
+                    try:
+                        if hasattr(transaction['date'], 'strftime'):
+                            date_str = transaction['date'].strftime('%Y-%m-%d %H:%M:%S')
+                        else:
+                            date_str = str(transaction['date'])
+                        
+                        if float(transaction['amount']) >= 0:
+                            amount_str = f"PHP +{float(transaction['amount']):.2f}"
+                            tag = 'positive'
+                        else:
+                            amount_str = f"PHP {float(transaction['amount']):.2f}"
+                            tag = 'negative'
+                        
+                        transacId = transaction.get('transacId', '')
+                        description = transaction.get('description', 'Transaction')
+                        
+                        item_id = tree.insert('', 'end', values=(date_str, description, 
+                                                    amount_str, transacId))
+                        
+                        if tag == 'positive':
+                            tree.tag_configure('positive', foreground='green')
+                            tree.item(item_id, tags=('positive',))
+                        elif tag == 'negative':
+                            tree.tag_configure('negative', foreground='red')
+                            tree.item(item_id, tags=('negative',))
+                            
+                    except (KeyError, ValueError, AttributeError) as e:
+                        print(f"Error processing transaction: {e}")
+                        continue
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not load transaction history: {e}")
+            tree.insert('', 'end', values=('', f'Error: {str(e)}', '', ''))
+        
+        refreshBtn = Button(frame, text="Refresh History", font=('Helvetica', 12),
+                        command=lambda: self._refreshHistory(frame))
+        refreshBtn.pack(pady=10)
+
+    def _refreshHistory(self, frame):
+        """Refresh the transaction history"""
+        try:
+            self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+            self._setupAccountHistory(frame)
+            messagebox.showinfo("Success", "Transaction history refreshed successfully.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to refresh history: {str(e)}")
 
     def _setupUpdateDetails(self, frame):
         pass
