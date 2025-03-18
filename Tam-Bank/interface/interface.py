@@ -309,11 +309,119 @@ class GUIinterface:
                         command=lambda: self._refreshAccountDetails(frame))
         refresh_btn.pack(pady=20)
 
-    
+    def _refreshAccountDetails(self, frame):
+        """ Refresh the account details to get newer and updated information """
+        for widget in frame.winfo_children():
+            widget.destroy()
+        
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
+        self._setupAccountDetails(frame)
+        messagebox.showinfo('Success', 'Account details refreshed successfully.')
+
     def _setupDeposit(self, frame):
-        pass
+        """ interface for depositing"""
+        header = Label(frame, text='Deposit Money', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+
+        depoFrame = Frame(frame)
+        depoFrame.pack(pady=20, padx=50)
+
+        balFrame = Frame(depoFrame)
+        balFrame.pack(fill = X, pady=10)
+        balLabel = Label(balFrame, text = 'Current Balance:', font = ('Helvetica', 16, 'bold'))
+        balLabel.pack(side = LEFT)
+        balVal = Label(balFrame, text = f"${self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
+        balVal.pack(side = LEFT, padx = 10)
+
+        amountFrame = Frame(depoFrame)
+        amountFrame.pack(fill = X, pady=20)
+        amountLabel = Label(amountFrame, text = 'Amount:', font = ('Helvetica', 16, 'bold'))
+        amountLabel.pack(side = LEFT)
+        amountEntry = Entry(amountFrame, font = ('Helvetica', 16), width = 20)
+        amountEntry.pack(side = LEFT, padx = 10)
+
+        refreshBtn = Button(depoFrame, text="↻", font=('Helvetica', 12, 'bold'), command=lambda: self._refreshDetails(balVal))
+        refreshBtn.pack(side= LEFT)
+
+        depositBtn = Button(depoFrame, text="Deposit", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processDeposit(amountEntry, balVal))
+        depositBtn.pack(side = RIGHT)
+
+    def _refreshDetails(self, balLabel):
+        """ Refresh details in deposit frame """
+        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+
+        balLabel.config(text=f"${self.activeAccount.balance:.2f}")
+        messagebox.showinfo('Success', 'Balance updated successfully.')
+
+
+    def _processDeposit(self, amount, balance):
+        """ desposit money into account """
+        try:
+            amount = float(amount.get())
+            if amount <= 0:
+                messagebox.showerror("Error", "Amount must be greater than 0.")
+                return
+            success, message = self.bank.deposit(self.activeAccount.accountNumber, amount)
+
+            if success:
+                messagebox.showinfo("Success", message)
+                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber, amount)
+                balance.config(text=f"${self.activeAccount.balance:.2f}")
+                amount.delete(0, END)
+            else:
+                messagebox.showerror("Error", message)
+        except ValueError:
+            messagebox.showerror("Error", "Enter a valid amount.")
+                
+    def _processWithdraw(self, amount, balLabel):
+        """ withdraw transaction backend """
+        try:
+            amount = float(amount.get())
+            if amount <= 0:
+                messagebox.showerror("Error", "Amount must be greater than 0.")
+                return
+            success, message = self.bank.withdraw(self.activeAccount.accountNumber, amount)
+
+            if success:
+                messagebox.showinfo("Success", message)
+                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber, amount)
+                balLabel.config(text=f"${self.activeAccount.balance:.2f}")
+                amount.delete(0, END)
+            else:
+                messagebox.showerror("Error", message)
+        except ValueError:
+            messagebox.showerror("Error", "Enter a valid amount.")
 
     def _setupWithdraw(self, frame):
+        """ withdraw money from account """
+        header = Label(frame, text='Withdraw Money', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+
+        withdrawFrame = Frame(frame)
+        withdrawFrame.pack(pady=20, padx=50)
+        balFrame = Frame(withdrawFrame)
+        balFrame.pack(fill = X, pady=10)
+
+        balLabel = Label(balFrame, text = 'Current Balance:', font = ('Helvetica', 16, 'bold'))
+        balLabel.pack(side = LEFT)
+        balVal = Label(balFrame, text = f"${self.activeAccount.balance:.2f}", font = ('Helvetica', 16))
+        balVal.pack(side = LEFT, padx = 10)
+
+        amountFrame = Frame(withdrawFrame)
+        amountFrame.pack(fill = X, pady=20)
+        amountLabel = Label(amountFrame, text = 'Amount:', font = ('Helvetica', 16, 'bold'))
+        amountLabel.pack(side = LEFT)
+        amountEntry = Entry(amountFrame, font = ('Helvetica', 16), width = 20)
+        amountEntry.pack(side = LEFT, padx = 10)
+
+        refreshBtn = Button(withdrawFrame, text="↻", font=('Helvetica', 12, 'bold'), command=lambda: self._refreshDetails(balVal))
+        refreshBtn.pack(side= LEFT)
+
+        withdrawBtn = Button(withdrawFrame, text="Withdraw", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processWithdraw(amountEntry, balVal))
+        withdrawBtn.pack(side = RIGHT)
+
+    def _processTransfer(self, toAcc, amount, desc, balLabel):
         pass
 
     def _setupTransfer(self, frame):

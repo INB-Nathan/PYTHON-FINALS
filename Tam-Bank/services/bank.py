@@ -140,3 +140,15 @@ class TamBank:
             self._saveAccounts()
         
         return success, message
+    
+    def transaction(self, accountNumber, toAccount, amount, description):
+        """Transfer between accounts"""
+        account = self.getAccount(accountNumber)
+        if not account:
+            return False, "Account not found"
+        
+        success, message = account.transferAcc(toAccount, float(amount), description)
+        if success:
+            self._saveAccounts()
+        
+        return success, message
