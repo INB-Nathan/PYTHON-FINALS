@@ -170,6 +170,36 @@ class GUIinterface:
         except Exception as e:
             messagebox.showerror('Error', f'Failed to create account: str(e)')
 
+    def _updateAccount(self, fields, window):
+        try:
+            # Validate input fields
+            for field, entry in fields.items():
+                if not entry.get().strip():
+                    messagebox.showerror('Error', f'{field} field cannot be empty.')
+                    return
+
+            # Extract input values
+            fName = fields['First Name'].get()
+            lName = fields['Last Name'].get()
+            mobileNo = fields['Phone Number'].get()
+            email = fields['Email'].get()
+
+            # Ensure accountNumber is passed correctly
+            accountNumber = self.activeAccount.accountNumber
+
+            # Call update function from the bank system
+            success, message = self.bank.updateAccount(fName, lName, mobileNo, email, accountNumber)
+
+            if success:
+                messagebox.showinfo('Success', 'Account successfully updated!')
+                window.destroy()
+            else:
+                messagebox.showerror('Error', message)
+
+        except Exception as e:
+            messagebox.showerror('Error', f'Failed to update account: {str(e)}')
+            print(f"Exception occurred: {e}")  # Debugging
+
     def showUserScreen(self):
         """ Display the user dashboard with button-based navigation """
         self.mainWindow = Tk()
@@ -208,7 +238,8 @@ class GUIinterface:
             'transfer': transferFrame,
             'history': accountHistoryFrame,
             'password': changePassFrame,
-            'close': closeFrame
+            'close': closeFrame,
+            'update': changeUpdateFrame
         }
         
         # Create navigation buttons
@@ -323,7 +354,42 @@ class GUIinterface:
         pass
 
     def _setupUpdateDetails(self, frame):
-        pass
+        """ Display update account """
+        header = Label(frame, text='Update Account', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+
+        updateFrame = Frame(frame)
+        updateFrame.pack(pady=20, fill=X, padx = 50)
+
+        fields = {}
+        account = self.activeAccount
+        field_data = [
+            ('First Name', account.fName),
+            ('Last Name', account.lName),
+            ('Phone Number', account.mobileNo),
+            ('Email', account.email)
+        ]
+
+        for labelText, value in field_data:
+            rowFrame = Frame(updateFrame)
+            rowFrame.pack(fill=X, pady=5)
+            
+            label = Label(rowFrame, text=f"{labelText}:", font=('Helvetica', 14, 'bold'), width=15, anchor='w')
+            label.pack(side=LEFT)
+            
+            entry = Entry(rowFrame, font=('Helvetica', 14))
+            entry.pack(side=LEFT, padx=10, fill=X, expand=True)
+            entry.insert(0, value)  # Pre-fill existing data
+            
+            fields[labelText] = entry
+        
+        btnFrame = Frame(updateFrame)
+        btnFrame.pack(pady=20)
+        
+        btnUpdate = Button(btnFrame, text='Update', font=('Helvetica', 12), 
+                           command=lambda: self._updateAccount(fields, updateFrame))
+        
+        btnUpdate.pack(side=LEFT, padx=10)
 
     def _setupChangePassword(self, frame):
         pass
