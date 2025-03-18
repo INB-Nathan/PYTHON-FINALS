@@ -421,8 +421,50 @@ class GUIinterface:
         withdrawBtn = Button(withdrawFrame, text="Withdraw", font=('Helvetica', 14, 'bold'), bg='#4CAF50', fg='white', padx=20, pady=5, command=lambda: self._processWithdraw(amountEntry, balVal))
         withdrawBtn.pack(side = RIGHT)
 
-    def _processTransfer(self, toAcc, amount, desc, balLabel):
-        pass
+    def _processTransfer(self, toAcc, amount, desc, balVal):
+        """ transfer money between accounts """
+        
+        # first check the account
+        try:
+            toAcc = self.bank.getAccount(toAcc).strip()
+            if not toAcc:
+                messagebox.showerror("Error", "Account not found.")
+                return
+            amount = float(amount.get())
+            if amount <= 0:
+                messagebox.showerror("Error", "Amount must be greater than 0.")
+                return
+            
+            if amount > self.activeAccount.balance:
+                messagebox.showerror("Error", "Insufficient funds.")
+                return
+            
+            description = desc.get().strip()
+            if not description:
+                description = f'Transfer to {toAcc}'
+            
+            confirm = messagebox.askyesno("Confirm Transfer", f"Transfer ${amount:.2f} to account {toAcc}?\nDescription: {description}")
+            if not confirm:
+                return
+            
+            sucess, message = self.bank.transaction(
+                self.activeAccount.accountNumber, toAcc, amount, description
+            )
+
+            if sucess:
+                messagebox.showinfo("Success", message)
+                self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
+                balVal.config(text=f"${self.activeAccount.balance:.2f}")
+                toAcc.delete(0,END)
+                amount.delete(0,END)
+                desc.delete(0,END)
+            else:
+                messagebox.showerror("Error", message)
+
+        except ValueError:
+            messagebox.showerror("Erorr", "Enter a valid amount.")
+    
+
 
     def _setupTransfer(self, frame):
         pass
