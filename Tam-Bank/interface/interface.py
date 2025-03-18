@@ -71,6 +71,21 @@ class GUIinterface:
         if not txtID.get() or not txtPass.get():
             messagebox.showerror('Login Failed', 'Please enter your Account Number and Password')
             return
+        
+        accountId = txtID.get()
+        password = txtPass.get()
+
+        if accountId == "admin":
+            success, message = self.bank.authPass(accountId, password)
+            if success:
+                self.mainWindow.destroy()
+                self._adminInterface()
+            else:
+                messagebox.showerror('Login Failed', message)
+                txtPass.delete(0, END)
+            return
+        
+
 
         success,message = self.bank.authPass(txtID.get(), txtPass.get())
         if success:
@@ -724,8 +739,8 @@ class GUIinterface:
             
             entry = Entry(rowFrame, font=('Helvetica', 14))
             entry.pack(side=LEFT, padx=10, fill=X, expand=True)
-            entry.insert(0, value)  # Pre-fill existing data
-            
+            entry.insert(0, value)
+
             fields[labelText] = entry
         
         btnFrame = Frame(updateFrame)
@@ -896,5 +911,12 @@ class GUIinterface:
     def _logout(self):
         self.activeAccount = None
         self.loginScreen()
+
+    def _adminInterface(self):
+        """ Starting The Admin Interface """
+        from aInterface import adminGUIinterface
+        
+        adminGUI = adminGUIinterface(self.bank)
+        adminGUI.start()
 
 

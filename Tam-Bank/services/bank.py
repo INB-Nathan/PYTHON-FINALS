@@ -226,7 +226,7 @@ class TamBank:
                                 "date": date_obj,
                                 "description": row['description'],
                                 "amount": amount,
-                                "transaction_id": row['transacId']
+                                "transacId": row['transacId']
                             })
                             print(f"Added transaction: {amount} - {row['description']}")
                         except Exception as e:
