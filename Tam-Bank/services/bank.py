@@ -239,3 +239,27 @@ class TamBank:
 
         transactions.sort(key=lambda x: x['date'], reverse=True)
         return transactions
+    
+    def getAllAccounts(self):
+        """ Get all accounts """
+        pass
+    
+    def adminUpdateAccount(self, origId, newId, fname, lname, mobile, email, status, password = None):
+        """ Update account details with admin privileges """
+        pass
+
+    def adminSetPassword(self, accountId, newPassword):
+        """ Set a password with admin privileges """
+        pass
+
+    def adminDeleteAccount(self, accountId):
+        """ Delete an account with admin privileges """
+        pass
+
+    def isAdmin (self, accountId):
+        """ Check if an account is an admin """
+        pass
+
+    def getSystemStats(self):
+        """ Get system statistics """
+        pass
