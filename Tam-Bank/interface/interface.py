@@ -168,7 +168,88 @@ class GUIinterface:
             messagebox.showinfo('Success', f'Account successfully created!\nYour account number is: {account.accountNumber}\n' f'Login to continue.')
             window.destroy()
         except Exception as e:
-            messagebox.showerror('Error', f'Failed to create account: str(e)')
+            messagebox.showerror('Error', f'Failed to create account: {str(e)}')
+
+    def _updateAccount(self, fields, window):
+        try:
+            # Validate input fields
+            for field, entry in fields.items():
+                if not entry.get().strip():
+                    messagebox.showerror('Error', f'{field} field cannot be empty.')
+                    return
+
+            # Extract input values
+            fName = fields['First Name'].get()
+            lName = fields['Last Name'].get()
+            mobileNo = fields['Phone Number'].get()
+            email = fields['Email'].get()
+
+            # Ensure accountNumber is passed correctly
+            accountNumber = self.activeAccount.accountNumber
+
+            # Call update function from the bank system
+            success, message = self.bank.updateAccount(fName, lName, mobileNo, email, accountNumber)
+
+            if success:
+                messagebox.showinfo('Success', 'Account successfully updated!')
+            else:
+                messagebox.showerror('Error', message)
+
+        except Exception as e:
+            messagebox.showerror('Error', f'Failed to update account: {str(e)}')
+            print(f"Exception occurred: {e}")
+    
+    def _depositFunds(self, txtAmount):
+        """ Handle deposit action """
+        try:
+            amount = float(txtAmount.get())
+            if amount <= 0:
+                messagebox.showerror('Error', 'Deposit amount must be greater than zero.')
+                return
+    
+            success, message = self.bank.deposit(self.activeAccount.accountNumber, amount)
+            if success:
+                messagebox.showinfo('Success', message)
+            else:
+                messagebox.showerror('Error', message)
+        except ValueError:
+            messagebox.showerror('Error', 'Invalid amount entered.')
+    
+    def _withdrawFunds(self, txtAmount):
+        """ Handle withdraw action """
+        try:
+            amount = float(txtAmount.get())
+            if amount <= 0:
+                messagebox.showerror('Error', 'Withdrawal amount must be greater than zero.')
+                return
+    
+            success, message = self.bank.withdraw(self.activeAccount.accountNumber, amount)
+            if success:
+                messagebox.showinfo('Success', message)
+            else:
+                messagebox.showerror('Error', message)
+        except ValueError:
+            messagebox.showerror('Error', 'Invalid amount entered.')
+
+    def _changePassword(self, txtOldPass, txtNewPass, txtConfirmPass):
+        """ Handle change password action """
+        oldPass = txtOldPass.get()
+        newPass = txtNewPass.get()
+        confirmPass = txtConfirmPass.get()
+    
+        if not oldPass or not newPass or not confirmPass:
+            messagebox.showerror('Error', 'All fields must be filled.')
+            return
+    
+        if newPass != confirmPass:
+            messagebox.showerror('Error', 'New Password and Confirm Password do not match.')
+            return
+    
+        success, message = self.bank.changePass(self.activeAccount.accountNumber, oldPass, newPass)
+        if success:
+            messagebox.showinfo('Success', message)
+        else:
+            messagebox.showerror('Error', message)
 
     def showUserScreen(self):
         """ Display the user dashboard with button-based navigation """
@@ -205,7 +286,8 @@ class GUIinterface:
             'transfer': transferFrame,
             'history': accountHistoryFrame,
             'password': changePassFrame,
-            'close': closeFrame
+            'close': closeFrame,
+            'update': changeUpdateFrame
         }
         
         # Create navigation buttons
@@ -613,17 +695,84 @@ class GUIinterface:
             messagebox.showerror("Error", f"Failed to refresh history: {str(e)}")
 
     def _setupUpdateDetails(self, frame):
-        pass
+        """ Display update account """
+        header = Label(frame, text='Update Account', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+
+        updateFrame = Frame(frame)
+        updateFrame.pack(pady=20, fill=X, padx = 50)
+
+        fields = {}
+        account = self.activeAccount
+        field_data = [
+            ('First Name', account.fName),
+            ('Last Name', account.lName),
+            ('Phone Number', account.mobileNo),
+            ('Email', account.email)
+        ]
+
+        for labelText, value in field_data:
+            rowFrame = Frame(updateFrame)
+            rowFrame.pack(fill=X, pady=5)
+            
+            label = Label(rowFrame, text=f"{labelText}:", font=('Helvetica', 14, 'bold'), width=15, anchor='w')
+            label.pack(side=LEFT)
+            
+            entry = Entry(rowFrame, font=('Helvetica', 14))
+            entry.pack(side=LEFT, padx=10, fill=X, expand=True)
+            entry.insert(0, value)  # Pre-fill existing data
+            
+            fields[labelText] = entry
+        
+        btnFrame = Frame(updateFrame)
+        btnFrame.pack(pady=20)
+        
+        btnUpdate = Button(btnFrame, text='Update', font=('Helvetica', 12), 
+                           command=lambda: self._updateAccount(fields, updateFrame))
+        
+        btnUpdate.pack(side=LEFT, padx=10)
 
     def _setupChangePassword(self, frame):
-        pass
+        """ Setup change password functionality """
+        header = Label(frame, text='Change Password', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+    
+        oldPassFrame = Frame(frame)
+        oldPassFrame.pack(pady=10)
+    
+        lblOldPass = Label(oldPassFrame, text='Old Password:', font=('Helvetica', 14, 'bold'))
+        lblOldPass.pack(side=LEFT)
+    
+        txtOldPass = Entry(oldPassFrame, font=('Helvetica', 14), show='*')
+        txtOldPass.pack(side=LEFT, padx=10)
+    
+        newPassFrame = Frame(frame)
+        newPassFrame.pack(pady=10)
+    
+        lblNewPass = Label(newPassFrame, text='New Password:', font=('Helvetica', 14, 'bold'))
+        lblNewPass.pack(side=LEFT)
+    
+        txtNewPass = Entry(newPassFrame, font=('Helvetica', 14), show='*')
+        txtNewPass.pack(side=LEFT, padx=10)
+    
+        confirmPassFrame = Frame(frame)
+        confirmPassFrame.pack(pady=10)
+    
+        lblConfirmPass = Label(confirmPassFrame, text='Confirm Password:', font=('Helvetica', 14, 'bold'))
+        lblConfirmPass.pack(side=LEFT)
+    
+        txtConfirmPass = Entry(confirmPassFrame, font=('Helvetica', 14), show='*')
+        txtConfirmPass.pack(side=LEFT, padx=10)
+    
+        btnChangePass = Button(frame, text='Change Password', font=('Helvetica', 12),
+                               command=lambda: self._changePassword(txtOldPass, txtNewPass, txtConfirmPass))
+        btnChangePass.pack(pady=10)
 
     def _setupCloseAccount(self, frame):
         pass
 
     def _logout(self):
         self.activeAccount = None
-        self.mainWindow.destroy()
         self.loginScreen()
 
 
