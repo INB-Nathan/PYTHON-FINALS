@@ -231,6 +231,26 @@ class GUIinterface:
         except ValueError:
             messagebox.showerror('Error', 'Invalid amount entered.')
 
+    def _changePassword(self, txtOldPass, txtNewPass, txtConfirmPass):
+        """ Handle change password action """
+        oldPass = txtOldPass.get()
+        newPass = txtNewPass.get()
+        confirmPass = txtConfirmPass.get()
+    
+        if not oldPass or not newPass or not confirmPass:
+            messagebox.showerror('Error', 'All fields must be filled.')
+            return
+    
+        if newPass != confirmPass:
+            messagebox.showerror('Error', 'New Password and Confirm Password do not match.')
+            return
+    
+        success, message = self.bank.changePass(self.activeAccount.accountNumber, oldPass, newPass)
+        if success:
+            messagebox.showinfo('Success', message)
+        else:
+            messagebox.showerror('Error', message)
+
     def showUserScreen(self):
         """ Display the user dashboard with button-based navigation """
         self.mainWindow = Tk()
@@ -454,7 +474,40 @@ class GUIinterface:
         btnUpdate.pack(side=LEFT, padx=10)
 
     def _setupChangePassword(self, frame):
-        pass
+        """ Setup change password functionality """
+        header = Label(frame, text='Change Password', font=('Helvetica', 24, 'bold'))
+        header.pack(pady=20)
+    
+        oldPassFrame = Frame(frame)
+        oldPassFrame.pack(pady=10)
+    
+        lblOldPass = Label(oldPassFrame, text='Old Password:', font=('Helvetica', 14, 'bold'))
+        lblOldPass.pack(side=LEFT)
+    
+        txtOldPass = Entry(oldPassFrame, font=('Helvetica', 14), show='*')
+        txtOldPass.pack(side=LEFT, padx=10)
+    
+        newPassFrame = Frame(frame)
+        newPassFrame.pack(pady=10)
+    
+        lblNewPass = Label(newPassFrame, text='New Password:', font=('Helvetica', 14, 'bold'))
+        lblNewPass.pack(side=LEFT)
+    
+        txtNewPass = Entry(newPassFrame, font=('Helvetica', 14), show='*')
+        txtNewPass.pack(side=LEFT, padx=10)
+    
+        confirmPassFrame = Frame(frame)
+        confirmPassFrame.pack(pady=10)
+    
+        lblConfirmPass = Label(confirmPassFrame, text='Confirm Password:', font=('Helvetica', 14, 'bold'))
+        lblConfirmPass.pack(side=LEFT)
+    
+        txtConfirmPass = Entry(confirmPassFrame, font=('Helvetica', 14), show='*')
+        txtConfirmPass.pack(side=LEFT, padx=10)
+    
+        btnChangePass = Button(frame, text='Change Password', font=('Helvetica', 12),
+                               command=lambda: self._changePassword(txtOldPass, txtNewPass, txtConfirmPass))
+        btnChangePass.pack(pady=10)
 
     def _setupCloseAccount(self, frame):
         pass
