@@ -1,39 +1,40 @@
 from models.account import Account
 from utils.filehandling import fileHandling
 import random
+import csv
+import os
+from datetime import datetime, timedelta
+import hashlib
 
 class TamBank:
     """ Manager class for the bank """
-    # initialize the accounts as empty dictionary
-    # why dictionary? because the account number is unique and it is the key for the dictionary
-    # every time you load into the program, it loads the accounts from the file
-    # then iterate through the accounts in the accountList and add them in the accounts dictionary
     def __init__(self):
         self.accounts = {}
+        # initialize the accounts dictionary by using the loadAccounts method
         accountList = fileHandling.loadFile()
+        # load the accounts from the .csv file
         for account in accountList:
             self.accounts[account.accountNumber] = account
     
     def _loadAccounts(self):
         """ Load the transactions from each account in the .csv file"""
-        # load the accounts from the file
+        # load the accounts from the .csv file
         self.accounts = fileHandling.loadFile(self)
-        # iterate through the accounts and load the transactions for each account
+        # for loop to load the transactions from each account
         for account in self.accounts:
             account.transactions = fileHandling.loadTransactions(account.accountNumber)
-        print(f"Loaded {len(self.accounts)} accounts from storage.")
+        return len(self.accounts)
     
     def _saveAccounts(self):
         """ Save the accounts to the .csv file """
-        # put the accounts in a list
+        # save the accounts to the .csv file
         accountsList = list(self.accounts.values())
-        # save the list to the file
         return fileHandling.saveFile(accountsList)
     
-    def createAccount(self, fName = "", lName = "", initialBal = 0.0, mobileNo = "", email = "", password = None):
+    def createAccount(self, fName="", lName="", initialBal=0.0, mobileNo="", email="", password=None):
         """ Create a new account """
         while True:
-            accountNumber = str(random.randint(20210000,20230000))
+            accountNumber = str(random.randint(20210000, 20230000))
             if accountNumber not in self.accounts:
                 break
         account = Account(accountNumber, fName, lName, initialBal, mobileNo, email)
@@ -143,7 +144,7 @@ class TamBank:
         amount = float(amount) if not isinstance(amount, float) else amount
 
         if amount <= 0:
-            return False, "Deposit amount must be greater than 0"
+            return False, "Withdrawal amount must be greater than 0"
         
         if account.balance < amount:
             return False, "Insufficient funds"
@@ -165,24 +166,21 @@ class TamBank:
         if not toAcc:
             return False, "Recipient account not found"
         
-        if fromAccount.balance < float(amount):
+        amount = float(amount)
+        if fromAccount.balance < amount:
             return False, "Insufficient funds"
         
-        fromAccount.balance -= float(amount)
-        toAcc.balance += float(amount)
+        fromAccount.balance -= amount
+        toAcc.balance += amount
         
-        self._saveTransaction(accountNumber, toAccount, float(amount), description)
+        self._saveTransaction(accountNumber, toAccount, amount, description)
         self._saveAccounts()
         
-        return True, f"Successfully transferred PHP {float(amount):.2f} to account {toAccount}"
+        return True, f"Successfully transferred PHP {amount:.2f} to account {toAccount}"
     
     def _saveTransaction(self, fromAccount, toAccount, amount, description):
-        """ save transactions to transac.csv"""
-        import csv, os
-        from datetime import datetime
-
+        """ Save transactions to transactions.csv"""
         transacPath = "Tam-Bank/userinfo/transactions.csv"
-
         transacId = self._generateTransacId()
         currentDate = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -199,12 +197,8 @@ class TamBank:
         return random.randint(100000, 999999)
     
     def getAccountTransactions(self, accountNumber):
-        """ get all transactions """
-        import csv, os
-        from datetime import datetime
-
+        """ Get all transactions for an account """
         transacPath = "Tam-Bank/userinfo/transactions.csv"
-        
         transactions = []
         
         try:
@@ -228,38 +222,322 @@ class TamBank:
                                 "amount": amount,
                                 "transacId": row['transacId']
                             })
-                            print(f"Added transaction: {amount} - {row['description']}")
-                        except Exception as e:
-                            print(f"Error processing transaction row: {e}")
-                            print(f"Row data: {row}")
-
-                print(f"Loaded {len(transactions)} transactions for account {accountNumber}")
-        except Exception as e:
-            print(f"Error loading transactions: {e}")
+                        except Exception:
+                            continue
+        except Exception:
+            pass
 
         transactions.sort(key=lambda x: x['date'], reverse=True)
         return transactions
     
     def getAllAccounts(self):
-        """ Get all accounts """
-        pass
-    
-    def adminUpdateAccount(self, origId, newId, fname, lname, mobile, email, status, password = None):
-        """ Update account details with admin privileges """
-        pass
+        """Get all accounts in the system and update the accounts dictionary"""
+        accounts = []
+        
+        try:
+            with open('Tam-Bank/userinfo/accounts.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                
+                for row in reader:
+                    try:
+                        account_number = row['Account Number']
+                        
+                        account = Account(
+                            account_number,
+                            row['First Name'],
+                            row['Last Name'],
+                            float(row['Balance']),
+                            row['Mobile Number'],
+                            row['Email'],
+                            row.get('Password Hash', None)
+                        )
+                        
+                        try:
+                            account.dateOpened = datetime.strptime(row['Date Opened'], '%Y-%m-%d %H:%M:%S')
+                        except ValueError:
+                            account.dateOpened = datetime.now()
+                            
+                        account.status = row['Status'] if 'Status' in row else "Active"
+                        
+                        self.accounts[account_number] = account
+                        
+                        accounts.append(account)
+                        
+                    except Exception:
+                        continue
+                        
+        except Exception:
+            pass
+            
+        return accounts
 
-    def adminSetPassword(self, accountId, newPassword):
-        """ Set a password with admin privileges """
-        pass
+    def getAccountPasswordHash(self, account_number):
+        """Get the password hash for a specific account"""
+        if hasattr(self, 'account_password_hashes') and account_number in self.account_password_hashes:
+            return self.account_password_hashes[account_number]
+        return None
+
+    def adminUpdateAccount(self, originalId, newId, fname, lname, mobile, email, status, password=None):
+        """Update account details with admin privileges (no validation)"""
+        import csv
+        import os
+        
+        accountsData = []
+        found = False
+        
+        try:
+            with open('Tam-Bank/userinfo/accounts.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                fieldnames = reader.fieldnames
+                
+                for row in reader:
+                    if row['Account Number'] == originalId:
+                        found = True
+                        row['Account Number'] = newId
+                        row['First Name'] = fname
+                        row['Last Name'] = lname
+                        row['Mobile Number'] = mobile
+                        row['Email'] = email
+                        row['Status'] = status
+                    
+                    accountsData.append(row)
+            
+            if not found:
+                return False
+            
+            with open('Tam-Bank/userinfo/accounts.csv', 'w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(accountsData)
+            
+            if password and len(password) > 0:
+                import hashlib
+                passHash = hashlib.sha256(password.encode()).hexdigest()
+                
+                with open('Tam-Bank/userinfo/accounts.csv', 'r') as file:
+                    reader = csv.DictReader(file)
+                    fieldnames = reader.fieldnames
+                    rows = list(reader)
+                    
+                for row in rows:
+                    if row['Account Number'] == newId:
+                        if 'Password Hash' in row:
+                            row['Password Hash'] = passHash
+                            
+                with open('Tam-Bank/userinfo/accounts.csv', 'w', newline='') as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(rows)
+            
+            if originalId in self.accounts:
+                account = self.accounts.pop(originalId)
+                account.accountNumber = newId
+                account.fName = fname
+                account.lName = lname
+                account.mobileNo = mobile
+                account.email = email
+                account.status = status
+                self.accounts[newId] = account
+            
+            self.getAllAccounts()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error updating account: {e}")
+            return False
+
+    def adminSetPassword(self, accountId, newPass):
+        """Set a password for an account with admin privileges (no validation)"""
+        passHash = hashlib.sha256(newPass.encode()).hexdigest()
+        
+        account = self.getAccount(accountId)
+        if account:
+            account.passHash = passHash
+        
+        passwordData = []
+        updated = False
+        
+        try:
+            with open('Tam-Bank/userinfo/password.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                fieldnames = reader.fieldnames
+                
+                for row in reader:
+                    if row['accountid'] == accountId:
+                        row['password'] = passHash
+                        updated = True
+                    
+                    passwordData.append(row)
+            
+            if not updated:
+                passwordData.append({
+                    'accountid': accountId,
+                    'password': passHash
+                })
+            
+            with open('Tam-Bank/userinfo/password.csv', 'w', newline='') as file:
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(passwordData)
+            
+            return True
+            
+        except Exception:
+            return False
 
     def adminDeleteAccount(self, accountId):
-        """ Delete an account with admin privileges """
-        pass
+        """Delete an account permanently (admin function)"""
+        import csv
+        import os
+        
+        try:
+            accountIdStr = str(accountId).strip()
+            print(f"Attempting to delete account: {accountIdStr}")
+            
+            accountsFilePath = 'Tam-Bank/userinfo/accounts.csv'
+            if not os.path.exists(accountsFilePath):
+                print(f"Error: Accounts file not found at {accountsFilePath}")
+                return False
+                
+            accountsData = []
+            accountFound = False
+            
+            with open(accountsFilePath, 'r') as file:
+                reader = csv.DictReader(file)
+                fieldnames = reader.fieldnames
+                
+                for row in reader:
+                    rowId = str(row['Account Number']).strip()
+                    
+                    if rowId != accountIdStr:
+                        accountsData.append(row)
+                    else:
+                        accountFound = True
+            
+            if not accountFound:
+                return False
+            
+            try:
+                with open(accountsFilePath, 'w', newline='') as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(accountsData)
+            except PermissionError:
+                return False
+            except Exception as writeErr:
+                return False
+            
+            
+            try:
+                transFile = 'Tam-Bank/userinfo/transactions.csv'
+                if os.path.exists(transFile):
+                    transData = []
+                    
+                    with open(transFile, 'r') as file:
+                        reader = csv.DictReader(file)
+                        transFieldnames = reader.fieldnames
+                        
+                        for row in reader:
+                            if str(row['from_account']).strip() == accountIdStr:
+                                row['from_account'] = "[DELETED]"
+                            if str(row['to_account']).strip() == accountIdStr:
+                                row['to_account'] = "[DELETED]"
+                            transData.append(row)
+                    
+                    with open(transFile, 'w', newline='') as file:
+                        writer = csv.DictWriter(file, fieldnames=transFieldnames)
+                        writer.writeheader()
+                        writer.writerows(transData)
+                        print("Successfully updated transactions file")
+            except Exception as transErr:
+                print(f"Note: Error updating transactions: {transErr}")
+            
+            if accountIdStr in self.accounts:
+                del self.accounts[accountIdStr]
+            return True
+                
+        except Exception as e:
+            return False
 
-    def isAdmin (self, accountId):
-        """ Check if an account is an admin """
-        pass
+    def isAdmin(self, accountId):
+        """Check if an account is the admin account"""
+        try:
+            return accountId.lower() == 'admin'
+        except:
+            return False
 
     def getSystemStats(self):
-        """ Get system statistics """
-        pass
+        """Get system statistics for admin dashboard"""
+        stats = {
+            'total_accounts': 0,
+            'active_accounts': 0,
+            'total_balance': 0.0,
+            'recent_transactions': 0
+        }
+        
+        accounts = self.getAllAccounts()
+        stats['total_accounts'] = len(accounts)
+        
+        for account in accounts:
+            if account.status.lower() == 'active':
+                stats['active_accounts'] += 1
+            stats['total_balance'] += account.balance
+        
+        try:
+            with open('Tam-Bank/userinfo/transactions.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                weekAgo = datetime.now() - timedelta(days=7)
+                
+                for row in reader:
+                    try:
+                        transDate = datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
+                        if transDate >= weekAgo:
+                            stats['recent_transactions'] += 1
+                    except:
+                        pass
+        except Exception:
+            pass
+        
+        return stats
+    
+    def findAccount(self, accountId):
+        """Improved account lookup that handles different formats and whitespace"""
+        if accountId in self.accounts:
+            return self.accounts[accountId]
+            
+        normId = str(accountId).strip()
+        for accId, account in self.accounts.items():
+            if str(accId).strip() == normId:
+                return account
+        
+        try:
+            with open('Tam-Bank/userinfo/accounts.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    rowId = str(row['Account Number']).strip()
+                    if rowId == normId:
+                        account = Account(
+                            rowId,
+                            row['First Name'],
+                            row['Last Name'],
+                            float(row['Balance']),
+                            row['Mobile Number'],
+                            row['Email'],
+                            row.get('Password Hash', None)
+                        )
+                        
+                        try:
+                            account.dateOpened = datetime.strptime(row['Date Opened'], '%Y-%m-%d %H:%M:%S')
+                        except ValueError:
+                            account.dateOpened = datetime.now()
+                            
+                        account.status = row['Status'] if 'Status' in row else "Active"
+                        
+                        self.accounts[rowId] = account
+                        
+                        return account
+        except Exception:
+            pass
+            
+        return None
