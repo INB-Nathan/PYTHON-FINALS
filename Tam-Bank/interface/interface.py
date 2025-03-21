@@ -11,6 +11,7 @@ class GUIinterface:
         self.activeAccount = None
         self.mainWindow = None
         self.frames = {}
+        self.navigator = {}
 
     def start(self):
         """ Start the GUI with the login screen """    
@@ -298,7 +299,7 @@ class GUIinterface:
             self.logo = None
 
         headerFrame = Frame(self.mainWindow, bg='#f0f0f0')
-        headerFrame.pack(fill=X, padx=10, pady=5)
+        headerFrame.pack(fill=X)
         
         contentFrame = Frame(self.mainWindow)
         contentFrame.pack(fill=BOTH, expand=True, padx=10, pady=5)
@@ -325,42 +326,60 @@ class GUIinterface:
         
         # Create navigation buttons
         btnFont = ('Helvetica', 11, 'bold')
-        activeColor = '#4CAF50'
         normalColor = '#f0f0f0'
-        
+
         btnAccount = Button(headerFrame, text='Account Details', font=btnFont, 
-                        command=lambda: self._showFrame('account'),
-                        relief=RAISED, bd=2, padx=5)
+                command=lambda: self._showFrame('account'),
+                relief=RAISED, bd=2, padx=5,
+                bg=normalColor)
         btnDeposit = Button(headerFrame, text='Deposit', font=btnFont,
                         command=lambda: self._showFrame('deposit'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnWithdraw = Button(headerFrame, text='Withdraw', font=btnFont,
                         command=lambda: self._showFrame('withdraw'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnTransfer = Button(headerFrame, text='Transfer', font=btnFont,
                         command=lambda: self._showFrame('transfer'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnHistory = Button(headerFrame, text='Transaction History', font=btnFont,
                         command=lambda: self._showFrame('history'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnUpdate = Button(headerFrame, text='Update Details', font=btnFont,
                         command=lambda: self._showFrame('update'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnPassword = Button(headerFrame, text='Change Password', font=btnFont,
                         command=lambda: self._showFrame('password'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
         btnClose = Button(headerFrame, text='Close Account', font=btnFont,
                         command=lambda: self._showFrame('close'),
-                        relief=RAISED, bd=2, padx=5)
+                        relief=RAISED, bd=2, padx=5,
+                        bg=normalColor)
+        
+        self.navigator = {
+            'account': btnAccount,
+            'deposit': btnDeposit,
+            'withdraw': btnWithdraw,
+            'transfer': btnTransfer,
+            'history': btnHistory,
+            'password': btnPassword,
+            'close': btnClose,
+            'update': btnUpdate
+        }
 
-        btnAccount.pack(side=LEFT, padx=5, pady=5)
-        btnDeposit.pack(side=LEFT, padx=5, pady=5)
-        btnWithdraw.pack(side=LEFT, padx=5, pady=5)
-        btnTransfer.pack(side=LEFT, padx=5, pady=5)
-        btnHistory.pack(side=LEFT, padx=5, pady=5)
-        btnUpdate.pack(side=LEFT, padx=5, pady=5)
-        btnPassword.pack(side=LEFT, padx=5, pady=5)
-        btnClose.pack(side=LEFT, padx=5, pady=5)
+        btnAccount.pack(side=LEFT, fill='both', expand=True)
+        btnDeposit.pack(side=LEFT, fill='both', expand=True)
+        btnWithdraw.pack(side=LEFT, fill='both', expand=True)
+        btnTransfer.pack(side=LEFT, fill='both', expand=True)
+        btnHistory.pack(side=LEFT, fill='both', expand=True)
+        btnUpdate.pack(side=LEFT, fill='both', expand=True)
+        btnPassword.pack(side=LEFT, fill='both', expand=True)
+        btnClose.pack(side=LEFT, fill='both', expand=True)
         
         self._setupAccountDetails(accountFrame)
         self._setupDeposit(depositFrame)
@@ -379,7 +398,10 @@ class GUIinterface:
         self.mainWindow.mainloop()
 
     def _showFrame(self, frame_name):
-        """ Show the selected frame and hide others """
+        """ Show the selected frame, hide others, then changes the button fg to active """
+        activeColor = '#4CAF50'
+        normalColor = '#f0f0f0'
+        
         for frame in self.frames.values():
             frame.pack_forget()
         
@@ -406,6 +428,13 @@ class GUIinterface:
             self._setupCloseAccount(self.frames[frame_name])
         
         self.frames[frame_name].pack(fill=BOTH, expand=True)
+        
+        for name, btn in self.navigator.items():
+            if name == frame_name:
+                btn.config(bg=activeColor, fg='white')
+            else:
+                btn.config(bg=normalColor, fg='black')
+            
 
 
     def _setupAccountDetails(self, frame):
@@ -621,7 +650,7 @@ class GUIinterface:
         toLabel.pack(side=LEFT)
         
         toEntry = Entry(toFrame, font=('Helvetica', 16), width=20)
-        toEntry.pack(side=LEFT, padx=10)
+        toEntry.pack(side=RIGHT, padx=10)
         
         amountFrame = Frame(transferFrame)
         amountFrame.pack(fill=X, pady=10)
@@ -630,7 +659,7 @@ class GUIinterface:
         amountLabel.pack(side=LEFT)
         
         amountEntry = Entry(amountFrame, font=('Helvetica', 16), width=20)
-        amountEntry.pack(side=LEFT, padx=10)
+        amountEntry.pack(side=RIGHT, padx=10)
         
         descFrame = Frame(transferFrame)
         descFrame.pack(fill=X, pady=10)
@@ -639,11 +668,7 @@ class GUIinterface:
         descLabel.pack(side=LEFT)
         
         descEntry = Entry(descFrame, font=('Helvetica', 16), width=20)
-        descEntry.pack(side=LEFT, padx=10)
-
-        refreshBtn = Button(balFrame, text="↻", font=('Helvetica', 12, 'bold'), 
-                        command=lambda: self._refreshDetails(balValue))
-        refreshBtn.pack(side=LEFT)
+        descEntry.pack(side=RIGHT, padx=10)
         
         transfer_btn = Button(transferFrame, text="Transfer", font=('Helvetica', 14, 'bold'), bg='#2196F3', fg='white', padx=20, pady=5, command=lambda: self._processTransfer(toEntry, amountEntry, descEntry, balValue))
         transfer_btn.pack(side = RIGHT)
@@ -789,7 +814,7 @@ class GUIinterface:
         lblOldPass.pack(side=LEFT)
     
         txtOldPass = Entry(oldPassFrame, font=('Helvetica', 14), show='*')
-        txtOldPass.pack(side=LEFT, padx=10)
+        txtOldPass.pack(side=RIGHT, padx=10)
     
         newPassFrame = Frame(frame)
         newPassFrame.pack(pady=10)
@@ -798,7 +823,7 @@ class GUIinterface:
         lblNewPass.pack(side=LEFT)
     
         txtNewPass = Entry(newPassFrame, font=('Helvetica', 14), show='*')
-        txtNewPass.pack(side=LEFT, padx=10)
+        txtNewPass.pack(side=RIGHT, padx=10)
     
         confirmPassFrame = Frame(frame)
         confirmPassFrame.pack(pady=10)
@@ -807,7 +832,7 @@ class GUIinterface:
         lblConfirmPass.pack(side=LEFT)
     
         txtConfirmPass = Entry(confirmPassFrame, font=('Helvetica', 14), show='*')
-        txtConfirmPass.pack(side=LEFT, padx=10)
+        txtConfirmPass.pack(side=RIGHT, padx=5)
     
         btnChangePass = Button(frame, text='Change Password', font=('Helvetica', 12),
                                command=lambda: self._changePassword(txtOldPass, txtNewPass, txtConfirmPass))
@@ -936,9 +961,9 @@ class GUIinterface:
 
     def _adminInterface(self):
         """ Starting The Admin Interface """
-        from aInterface import adminGUIinterface
+        from interface.aInterface import AdminGUIinterface
         
-        adminGUI = adminGUIinterface(self.bank)
+        adminGUI = AdminGUIinterface(self.bank)
         adminGUI.start()
 
 

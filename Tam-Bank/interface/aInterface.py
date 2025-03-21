@@ -15,6 +15,13 @@ class AdminGUIinterface:
         self.mainWindow.title("TamBank - Admin Panel")
         self.mainWindow.geometry("1024x768")
         
+        try:
+            self.logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
+            self.titleLogo = PhotoImage(file = 'Tam-Bank/GUI/TamBank.png')
+            self.mainWindow.iconphoto(True, self.logo)
+        except:
+            self.titleLogo = None
+        
         # reload accounts
         accounts = self.bank.getAllAccounts()
         
@@ -38,6 +45,8 @@ class AdminGUIinterface:
         self._updateClock()
         
         # Nav Bar
+        style = ttk.Style() 
+        style.configure('TNotebook.Tab', font=('Helvetica','12'))
         tabControl = ttk.Notebook(self.mainWindow)
         accountsTab = Frame(tabControl)
         transactionsTab = Frame(tabControl)
@@ -205,7 +214,7 @@ class AdminGUIinterface:
         oldPwdLabel.pack(side=LEFT, padx=10)
         
         oldPwdEntry = Entry(oldPwdFrame, show="*", font=('Helvetica', 12), width=20)
-        oldPwdEntry.pack(side=LEFT, padx=5)
+        oldPwdEntry.pack(side=RIGHT, padx=5)
         
         newPwdFrame = Frame(pwdFrame)
         newPwdFrame.pack(fill=X, pady=5)
@@ -214,7 +223,7 @@ class AdminGUIinterface:
         newPwdLabel.pack(side=LEFT, padx=10)
         
         newPwdEntry = Entry(newPwdFrame, show="*", font=('Helvetica', 12), width=20)
-        newPwdEntry.pack(side=LEFT, padx=5)
+        newPwdEntry.pack(side=RIGHT, padx=5)
         
         confirmPwdFrame = Frame(pwdFrame)
         confirmPwdFrame.pack(fill=X, pady=5)
@@ -223,7 +232,7 @@ class AdminGUIinterface:
         confirmPwdLabel.pack(side=LEFT, padx=10)
         
         confirmPwdEntry = Entry(confirmPwdFrame, show="*", font=('Helvetica', 12), width=20)
-        confirmPwdEntry.pack(side=LEFT, padx=5)
+        confirmPwdEntry.pack(side=RIGHT, padx=5)
         
         changePwdBtn = Button(pwdFrame, text="Change Password", font=('Helvetica', 12),
                              command=lambda: self._changeAdminPassword(
@@ -508,7 +517,7 @@ class AdminGUIinterface:
         statusFrame.pack(fill=X, pady=5)
         Label(statusFrame, text="Status:", width=15, anchor=W).pack(side=LEFT)
         statusVar = StringVar(value=account.status)
-        statusCombo = ttk.Combobox(statusFrame, textvariable=statusVar, 
+        statusCombo = ttk.Combobox(statusFrame, textvariable=statusVar,state='readonly', 
                                   values=["Active", "Inactive", "Suspended", "Closed"])
         statusCombo.pack(side=LEFT, fill=X, expand=True)
         
@@ -734,6 +743,6 @@ class AdminGUIinterface:
         """Log out and return to login screen"""
         self.mainWindow.destroy()
         
-        from interface import GUIinterface
+        from interface.interface import GUIinterface
         gui = GUIinterface(self.bank)
         gui.start()
