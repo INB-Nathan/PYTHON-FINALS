@@ -28,7 +28,8 @@ class Account:
 
     def setPassword(self, password):
         """ Password setting for account """
-        self.passHash = Password.hashPass(password)
+        import hashlib
+        self.passHash = hashlib.sha256(password.encode()).hexdigest()
         return True
 
     def verifyPassword(self, password):

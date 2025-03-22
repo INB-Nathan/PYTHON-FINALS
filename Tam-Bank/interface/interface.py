@@ -35,8 +35,8 @@ class GUIinterface:
 
         # load images using try except block so that if there is no images found just set the title_logo to none to not confuse users
         try:
-            self.logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
-            self.titleLogo = PhotoImage(file = 'Tam-Bank/GUI/TamBank.png')
+            self.logo = PhotoImage(file = 'Tam-Bank/graphics/logo.png')
+            self.titleLogo = PhotoImage(file = 'Tam-Bank/graphics/TamBank.png')
             self.mainWindow.iconphoto(True, self.logo)
         except:
             self.titleLogo = None
@@ -285,15 +285,18 @@ class GUIinterface:
         hasLetter = any(char.isalpha() for char in newPass)
         hasSpecial = any(not char.isalnum() for char in newPass)
 
-        if len(newPass) < 6 or not hasDigit or not hasLetter or not hasSpecial:
-            messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
+        if len(newPass) < 8 or not hasDigit or not hasLetter or not hasSpecial:
+            messagebox.showerror('Error', 'Password must be at least 8 characters long and contain at least one letter, number, and special character.')
             return
-    
-        success, message = self.bank.changePass(self.activeAccount.accountNumber, oldPass, newPass)
-        if success:
-            messagebox.showinfo('Success', message)
-        else:
-            messagebox.showerror('Error', message)
+
+        try:
+            success = self.bank.changePass(self.activeAccount.accountNumber, oldPass, newPass)
+            if success:
+                messagebox.showinfo('Success', "Password successfully changed.")
+            else:
+                messagebox.showerror('Error', "Failed to change password.")
+        except Exception as e:
+            messagebox.showerror('Error', f'Failed to change password: {str(e)}')
 
     def showUserScreen(self):
         """ Display the user dashboard with button-based navigation """
@@ -304,7 +307,7 @@ class GUIinterface:
 
         # try except block for images
         try:
-            self.logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
+            self.logo = PhotoImage(file = 'Tam-Bank/graphics/logo.png')
         except:
             self.logo = None
 

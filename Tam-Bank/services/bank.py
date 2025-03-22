@@ -1,18 +1,14 @@
+# import needed dependencies or modules.
 from models.account import Account
 from utils.filehandling import fileHandling
-import random
-import csv
-import os
 from datetime import datetime, timedelta
-import hashlib
+import random, csv, os, hashlib
 
 class TamBank:
     """ Manager class for the bank """
     def __init__(self):
         self.accounts = {}
-        # initialize the accounts dictionary by using the loadAccounts method
         accountList = fileHandling.loadFile()
-        # load the accounts from the .csv file
         for account in accountList:
             self.accounts[account.accountNumber] = account
     
@@ -72,8 +68,15 @@ class TamBank:
             return False, "Current Password is incorrect"
         
         account = self.getAccount(accountNumber)
-        account.setPassword(newPass)
+        if not account:
+            return False, "Account not found"
+        
+        import hashlib
+        newHash = hashlib.sha256(newPass.encode()).hexdigest()
+        account.passHash = newHash
+
         self._saveAccounts()
+        verifySucess, _ = self.authPass(accountNumber, newPass)
         return True, "Password changed successfully"
 
     def updateAccount(self, fName, lName, mobileNo, email, accountNumber):

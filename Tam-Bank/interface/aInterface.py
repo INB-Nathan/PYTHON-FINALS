@@ -16,8 +16,8 @@ class AdminGUIinterface:
         self.mainWindow.geometry("1024x768")
         
         try:
-            self.logo = PhotoImage(file = 'Tam-Bank/GUI/logo.png')
-            self.titleLogo = PhotoImage(file = 'Tam-Bank/GUI/TamBank.png')
+            self.logo = PhotoImage(file = 'Tam-Bank/graphics/logo.png')
+            self.titleLogo = PhotoImage(file = 'Tam-Bank/graphics/TamBank.png')
             self.mainWindow.iconphoto(True, self.logo)
         except:
             self.titleLogo = None
