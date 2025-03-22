@@ -19,7 +19,9 @@ The system provides GUI interface for managing bank accounts, performing financi
 ## ✨ Features
 
 ### 🪟 GUI Tkinter
-- **User Friendly GUI Interface** - Easy input fields and good to the eyes
+- **User Friendly GUI Interface** - Modern and user friendly interface built with tkinter
+- **Form Validation** - Real-time input validation with visual feedback
+- **Error Notifications** - Clear error messages and success notifications
 
 ### 🔒 Account Management
 - **User Authentication** - Secure login with SHA-256 password hashing
@@ -44,40 +46,24 @@ The system provides GUI interface for managing bank accounts, performing financi
 - **CSV Storage** - Persistent data storage for accounts and transactions
 - **Transaction Logging** - Detailed recording of all financial activities
 
+### 🔄 Admin Management
+- **Dashboard Overview** - Comprehensive view of system statistics and activities
+- **Account Management** - Can view all registered accounts, set user accounts status, reset user passwords, edit account information, and delete accounts.
+- **Transaction Monitoring** - View all system transactions and view account transactions by searching the account.
+
 ## 🔧 Libraries Used
 
 - **Python 3.8+** - Core programming language
 - **hashlib** - Password encryption
 - **datetime** - Transaction and account timestamp handling
 - **csv** - Data storage and management
+- **tkinter** - GUI
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.8 or higher
-- Basic understanding of command-line interfaces
-
-### Installation
-
-1. Clone the repository
-```bash
-git clone https://github.com/INB-Nathan/PYTHON-FINALS.git
-cd PYTHON-FINALS/Tam-Bank
-```
-
-2. Ensure directory structure
-```
-Tam-Bank/
-├── main.py
-├── userinfo/
-│   ├── accounts.csv
-│   └── transactions.csv
-```
-
-3. Run the application
-```bash
-python main.py
-```
+- 
 
 ## 👥 Team Members
 
@@ -91,11 +77,11 @@ python main.py
 
 ## 📊 Project Status
 
-Last Updated: 2025-03-15
-Status: Under Development
+Last Updated: 2025-03-22
+Status: Finalizing
 
 ---
 
 <div align="center">
-  <p>© 2025 Pykings Team. All Rights Reserved.</p>
+  <p>© 2025 Pykings. All Rights Reserved.</p>
 </div>
