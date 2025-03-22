@@ -47,17 +47,19 @@ class TamBank:
         return account
     
     def authPass(self, accountNumber, password):
-        """ Authenticate the password """
+        """ Authenticate the password with debugging """
+        import hashlib
+        
         account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
-            
+                
         if account.status != "Active":
             return False, "This account is not active"
-            
+                
         if not hasattr(account, 'passHash') or not account.passHash:
             return False, "Account has no password set"
-            
+                
         if account.verifyPassword(password):
             return True, f"Welcome, {account.fName} {account.lName}"
         else:
@@ -541,3 +543,73 @@ class TamBank:
             pass
             
         return None
+    
+    def updateAdminPassword(self, oldPassword, newPassword):
+        """Update the admin password with debugging and thorough file updates"""
+        import csv
+        import hashlib
+        import os
+
+        success, message = self.authPass("admin", oldPassword)
+        if not success:
+            return False
+        
+        admin = self.getAccount("admin")
+        if not admin:
+            return False
+        
+        newHash = hashlib.sha256(newPassword.encode()).hexdigest()
+        print(f"Generated new hash: {newHash[:10]}...")
+        
+        admin.passHash = newHash
+        
+        csv_success = self._updatePasswordInCSV('Tam-Bank/userinfo/accounts.csv', 'Account Number', 'admin', 'Password Hash', newHash)
+        
+        pwdFile = 'Tam-Bank/userinfo/password.csv'
+        pwdSuccess = True
+        if os.path.exists(pwdFile):
+            pwdSuccess = self._updatePasswordInCSV(pwdFile, 'accountid', 'admin', 'password', newHash)
+        
+        self.getAllAccounts()
+        
+        return csv_success and pwdSuccess
+
+    def _updatePasswordInCSV(self, filePAth, idField, idValue, pwdField, newHash):
+        """Update a password in a CSV file with proper error handling"""
+        import csv
+        import os
+        
+        print(f"Updating password in {filePAth}...")
+        
+        if not os.path.exists(filePAth):
+            print(f"File not found: {filePAth}")
+            return False
+        
+        try:
+            rows = []
+            fieldnames = None
+            found = False
+            
+            with open(filePAth, 'r') as file:
+                reader = csv.DictReader(file)
+                fieldnames = reader.fieldnames
+                
+                for row in reader:
+                    if row.get(idField, '').lower() == idValue.lower():
+                        row[pwdField] = newHash
+                        found = True
+                    rows.append(row)
+            
+            if found:
+                with open(filePAth, 'w', newline='') as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(rows)
+                print(f"Successfully updated {filePAth}")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"Error updating {filePAth}: {str(e)}")
+        

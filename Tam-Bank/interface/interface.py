@@ -162,6 +162,7 @@ class GUIinterface:
         if fields ['Password'].get() != fields['Confirm Password'].get():
             messagebox.showerror('Error', 'Passwords do not match.')
             return
+            
         
         password = fields['Password'].get()
         has_digit = any(char.isdigit() for char in password)
@@ -171,6 +172,7 @@ class GUIinterface:
         if len(password) < 6 or not has_digit or not has_letter or not has_special:
             messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
             return
+
 
         # initial balance checker
         try:
@@ -277,6 +279,14 @@ class GUIinterface:
     
         if newPass != confirmPass:
             messagebox.showerror('Error', 'New Password and Confirm Password do not match.')
+            return
+            
+        hasDigit = any(char.isdigit() for char in newPass)
+        hasLetter = any(char.isalpha() for char in newPass)
+        hasSpecial = any(not char.isalnum() for char in newPass)
+
+        if len(newPass) < 6 or not hasDigit or not hasLetter or not hasSpecial:
+            messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
             return
     
         success, message = self.bank.changePass(self.activeAccount.accountNumber, oldPass, newPass)

@@ -245,7 +245,7 @@ class AdminGUIinterface:
         rightFrame = Frame(contentFrame, width=450)
         rightFrame.pack(side=RIGHT, fill=BOTH, expand=True, padx=10, pady=10)
         
-        statsFrame = LabelFrame(rightFrame, text="System Statistics (Excluding Admin)", font=('Helvetica', 12, 'bold'))
+        statsFrame = LabelFrame(rightFrame, text="System Statistics", font=('Helvetica', 12, 'bold'))
         statsFrame.pack(fill=BOTH, expand=True, pady=10)
         
         self.statsLabels = {}
@@ -714,7 +714,7 @@ class AdminGUIinterface:
             ))
     
     def _changeAdminPassword(self, oldPassword, newPassword, confirmPassword):
-        """Change admin password"""
+        """Change admin password with comprehensive debugging"""
         if not oldPassword or not newPassword or not confirmPassword:
             messagebox.showerror("Error", "All fields are required")
             return
@@ -723,19 +723,21 @@ class AdminGUIinterface:
             messagebox.showerror("Error", "New passwords do not match")
             return
         
+        hasDigit = any(char.isdigit() for char in newPassword)
+        hasLetter = any(char.isalpha() for char in newPassword)
+        hasSpecial = any(not char.isalnum() for char in newPassword)
+
+        if len(newPassword) < 8 or not (hasDigit and hasLetter and hasSpecial):
+            messagebox.showerror("Error", "Password must be at least 8 characters long and contain at least one digit, one letter, and one special character")
+            return
+        
         try:
-            success, _ = self.bank.authPass("admin", oldPassword)
-            
-            if not success:
-                messagebox.showerror("Error", "Current password is incorrect")
-                return
-                
-            success = self.bank.adminSetPassword("admin", newPassword)
+            success = self.bank.updateAdminPassword(oldPassword, newPassword)
             
             if success:
-                messagebox.showinfo("Success", "Admin password changed successfully")
+                messagebox.showinfo("Success", f"Admin password changed successfully to: {newPassword}\n\nPlease remember this password for your next login.")
             else:
-                messagebox.showerror("Error", "Failed to change password")
+                messagebox.showerror("Error", "Failed to change password. The current password may be incorrect.")
         except Exception as e:
             messagebox.showerror("Error", f"Error changing password: {str(e)}")
     

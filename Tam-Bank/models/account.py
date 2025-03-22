@@ -32,10 +32,15 @@ class Account:
         return True
 
     def verifyPassword(self, password):
-        """ Verify the password """
+        """Verify the password by direct hash comparison"""
+        import hashlib
+        
         if not self.passHash:
             return False
-        return Password.verifyPass(password, self.passHash)
+            
+        attemptHash = hashlib.sha256(password.encode()).hexdigest()
+        
+        return attemptHash == self.passHash
 
     def depositAcc(self, amount):
         """Delegate to Bank deposit method"""
