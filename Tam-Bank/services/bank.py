@@ -171,6 +171,9 @@ class TamBank:
         if not toAcc:
             return False, "Recipient account not found"
         
+        if fromAccount.status.lower() == "closed":
+            return False, "Cannot Transfer to a closed account"
+        
         amount = float(amount)
         if fromAccount.balance < amount:
             return False, "Insufficient funds"
