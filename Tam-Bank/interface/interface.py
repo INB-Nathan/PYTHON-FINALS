@@ -86,9 +86,20 @@ class GUIinterface:
                 txtPass.delete(0, END)
             return
         
+        account = self.bank.getAccount(accountId)
+        if not account:
+            messagebox.showerror('Login Failed', 'Account not found.')
+            return
 
-
-        success,message = self.bank.authPass(txtID.get(), txtPass.get())
+        if account.status.lower() == 'closed':
+            messagebox.showerror('Login Failed', 'Account is closed.')
+            return
+        
+        if account.status.lower() == 'suspended':
+            messagebox.showerror('Login Failed', 'Account is suspended.')
+            return
+        
+        success, message = self.bank.authPass(txtID.get(), txtPass.get())
         if success:
             self.activeAccount = self.bank.getAccount(txtID.get())
             self.mainWindow.destroy()
@@ -96,6 +107,7 @@ class GUIinterface:
         else:
             messagebox.showerror('Login Failed', message)
             txtPass.delete(0, END)
+
 
     def _showRegisterScreen(self):
         """ Window for creating new accounts """
