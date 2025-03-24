@@ -555,9 +555,14 @@ class AdminGUIinterface:
             if not newId.isdigit():
                 messagebox.showerror("Error", "Account ID must be numeric")
                 return
+            
             accountId = int(newId)
             if not (20210000 <= accountId <= 20230000):
                 messagebox.showerror("Error", "Account ID must be in the range 20210000 - 20230000")
+                return
+            
+            if not fname.isalpha() or not lname.isalpha():
+                messagebox.showerror("Error", "First and last names must contain only letters")
                 return
             
             if not (mobile.isdigit() and mobile.startswith('09') and len(mobile) == 11):
