@@ -4,6 +4,7 @@ from datetime import datetime
 
 class fileHandling:
     """ File handling of details to .csv files """
+    applicationFile = "Tam-Bank/userinfo/applications.csv"
     accountFile = "Tam-Bank/userinfo/accounts.csv"
     transactionFile = "Tam-Bank/userinfo/transactions.csv"
 
@@ -165,6 +166,36 @@ class fileHandling:
         except Exception as e:
             print(f"Error loading transactions: {e}")
             return []
+    
+    @staticmethod
+    def saveApplication(fName, lName, mobileNo, email, initialBal, bankType):
+        """Save a new application to the applications.csv file"""
+        try:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(fileHandling.applicationFile), exist_ok=True)
+            
+            # Check if file exists and write header if needed
+            file_exists = os.path.exists(fileHandling.applicationFile) and os.path.getsize(fileHandling.applicationFile) > 0
+            
+            with open(fileHandling.applicationFile, "a", newline='') as csvfile:
+                save = csv.writer(csvfile)
+                
+                # Write header if file is new or empty
+                if not file_exists:
+                    save.writerow(["Application ID", "First Name", "Last Name", "Mobile Number", "Email", 
+                                   "Initial Balance", "Bank Type", "Status", "Application Date"])
+                
+                # Generate application ID with timestamp for uniqueness
+                applicationId = f"APP-{int(datetime.now().timestamp())}"
+                applicationDate = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Default status is "Pending"
+                save.writerow([applicationId, fName, lName, mobileNo, email, initialBal, bankType, 
+                              "Pending", applicationDate])
+                
+            return True, applicationId
+        except Exception as e:
+            return False, f"Error saving application: {e}"
         
     @staticmethod
     def loadApplications(status=None):

@@ -54,7 +54,7 @@ class GUIinterface:
         txtID = Entry(self.mainWindow, font = defaultFont)
         txtPass = Entry(self.mainWindow, font = defaultFont, show= '*')
         btnLogin = Button(self.mainWindow, text = 'Login', font = btnFont, padx = 15, command = lambda: self._authenticate(txtID, txtPass))
-        btnRegister = Button(self.mainWindow, text = 'Register', font = btnFont, padx = 15, command = lambda: self._showRegisterScreen())
+        btnApply = Button(self.mainWindow, text = 'Apply', font = btnFont, padx = 15, command = lambda: self._showApplyScreen())
 
         # place the widgets
         lblAccountID.place(x = 160, y = 300)
@@ -62,7 +62,7 @@ class GUIinterface:
         txtID.place(x = 340, y = 300)
         txtPass.place(x = 340, y = 350)
         btnLogin.place(x = 450, y = 400)
-        btnRegister.place(x = 555, y = 400)
+        btnApply.place(x = 555, y = 400)
 
         self.mainWindow.mainloop()
 
@@ -108,94 +108,103 @@ class GUIinterface:
             messagebox.showerror('Login Failed', message)
             txtPass.delete(0, END)
 
+    def _showApplyScreen(self):
+        """Display the account application screen"""
+        # add styling
+        lblFont = ('Helvetica', 18, 'bold')
+        txtFont = ('Helvetica', 18)
+        btnFont = ('Helvetica', 16)
 
-    def _showRegisterScreen(self):
-        """ Window for creating new accounts """
-        # styling
-        lblFont = ('Arial', 18, 'bold')
-        txtFont = ('Arial', 18)
-        btnFont = ('Arial', 16)
+        applyScreen = Toplevel(self.mainWindow)
+        applyScreen.title('Become a Tam-Bank Member!')
+        applyScreen.geometry('800x700')
+        applyScreen.resizable(False, False)
+        applyScreen.grab_set()
 
-        registerScreen = Toplevel(self.mainWindow)
-        registerScreen.title('Create Account')
-        registerScreen.geometry('800x600')
-        registerScreen.resizable(False, False)
-        registerScreen.grab_set()
-
-        # header
-        lblHeader = Label(registerScreen, text='Enter user details', font=('Arial', 24, 'bold'))
-        lblHeader.grid(row=0, column=0, columnspan=2, pady=20)
-
+        lblHeader = Label(applyScreen, text = "Bank Account Application", font = ('Arial' , 24, 'bold'))
+        lblHeader.grid(row= 0, column = 0, columnspan = 2, pady = 20)
         fields = {}
         row = 1
 
-        for field in ['First Name', 'Last Name', 'Phone Number', 'Email', 'Balance', 'Password', 'Confirm Password']:
-            lbl = Label(registerScreen, text=f'{field}:', font=lblFont)
-            lbl.grid(row=row, column=0, sticky='w', padx=20, pady=10)
-            if 'Password' in field:
-                txt = Entry(registerScreen, font=txtFont, show='*')
-            else:
-                txt = Entry(registerScreen, font=txtFont)
-            txt.grid(row=row, column=1, padx=20, pady=5)
+        for field in ['First Name' , 'Last Name', 'Phone Number', 'Email', 'Initial Balance']:
+            lbl = Label(applyScreen, text = f'{field}:', font = lblFont)
+            lbl.grid(row = row, column = 0,sticky='w', padx = 20, pady = 10)
+            txt = Entry(applyScreen, font = txtFont)
+            txt.grid (row=row, column = 1, padx = 20, pady=5 )
             fields[field] = txt
             row += 1
+        
+        # Account Type
+        lbl = Label(applyScreen, text = 'Account Type:', font=lblFont)
+        lbl.grid (row=row, column = 0, sticky='w', padx=20, pady=10)
 
-        btnFrame = Frame(registerScreen)
+        accountTypeVar = StringVar(applyScreen)
+        accountTypeVar.set("Savings")
+
+        accountTypeDropdown = ttk.Combobox(applyScreen,
+                                           textvariable=accountTypeVar
+                                           , values = ['Savings', 'Checking', 'Business'],
+                                           font = txtFont,
+                                           state = 'readonly')
+        accountTypeDropdown.grid(row=row, column = 1, padx = 20 , pady = 5)
+        fields['Account Type'] = accountTypeVar
+        row += 1
+
+        infoFrame = Frame(applyScreen, bg="#e6f7ff", padx=20, pady=10)
+        infoFrame.grid(row=row, column=0, columnspan=2, sticky='we', padx=20, pady=10)
+        
+        infoLabel = Label(infoFrame, 
+                        text="Your application will be reviewed by our staff.\n"
+                            "You will be notified once your account is approved.",
+                        font=('Helvetica', 12),
+                        bg="#e6f7ff",
+                        justify=LEFT)
+        infoLabel.pack(anchor=W)
+        row += 1
+        
+        btnFrame = Frame(applyScreen)
         btnFrame.grid(row=row, column=0, columnspan=2, pady=20)
-        btnCreate = Button(btnFrame, text='Submit', font=btnFont, command=lambda: self._registerAccount(fields, registerScreen))
-        btnCancel = Button(btnFrame, text='Cancel', font=btnFont, command=registerScreen.destroy)
+        btnSubmit = Button(btnFrame, text='Submit Application', font=btnFont, 
+                        command=lambda: self._submitApplication(fields, applyScreen))
+        btnCancel = Button(btnFrame, text='Cancel', font=btnFont, 
+                        command=applyScreen.destroy)
 
-        btnCreate.pack(side=LEFT, padx=20)
+        btnSubmit.pack(side=LEFT, padx=20)
         btnCancel.pack(side=RIGHT, padx=20)
 
-        registerScreen.mainloop()
-    
-    def _registerAccount(self, fields, window):
-        """ register a new account with the bank service """
-        # create basic validation first
+        applyScreen.mainloop()
+
+
+    def _submitApplication(self, fields, window):
+        """ Submit a new account application """
         for field, entry in fields.items():
-            if not entry.get().strip() and field != 'Balance':
+            if field == 'Account Type':
+                value = entry.get()
+            else:
+                value = entry.get().strip()
+                
+            if not value and field != 'Initial Balance':
                 messagebox.showerror('Error', f'{field} field cannot be empty.')
                 return
-            
-        # name validation
+        
         fName = fields['First Name'].get()
         lName = fields['Last Name'].get()
         if not fName.isalpha() or not lName.isalpha():
             messagebox.showerror('Error', 'First and Last name must only contain letters.')
             return
         
-        # phone number validation
         phone = fields['Phone Number'].get()
         if not (phone.isdigit() and phone.startswith('09') and len(phone) == 11):
             messagebox.showerror('Error', 'Invalid phone number. It should start with 09 and have 11 digits.')
             return
         
-        # email validation
         email = fields['Email'].get()
         if '@' not in email or '.' not in email:
             messagebox.showerror('Error', 'Invalid email format.')
             return
         
-        # password checkingi if d same
-        if fields ['Password'].get() != fields['Confirm Password'].get():
-            messagebox.showerror('Error', 'Passwords do not match.')
-            return
-            
-        
-        password = fields['Password'].get()
-        hasDigit = any(char.isdigit() for char in password)
-        hasLetter = any(char.isalpha() for char in password)
-        hasSpecial = any(not char.isalnum() for char in password)
-
-        if len(password) < 6 or not hasDigit or not hasLetter or not hasSpecial:
-            messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
-            return
-
-
-        # initial balance checker
         try:
-            initialBal = float(fields['Balance'].get() if fields['Balance'].get() else 0)
+            initialBal = float(fields['Initial Balance'].get() if fields['Initial Balance'].get() else 0)
             if initialBal < 0:
                 messagebox.showerror('Error', 'Initial balance cannot be negative.')
                 return
@@ -203,21 +212,26 @@ class GUIinterface:
             messagebox.showerror('Error', 'Initial balance must be a valid number.')
             return
 
-        # try to create the account
+        bankType = fields['Account Type'].get()
+        
         try:
-            account = self.bank.createAccount(
-                fields['First Name'].get(),
-                fields['Last Name'].get(),
-                initialBal,
-                fields['Phone Number'].get(),
-                fields['Email'].get(),
-                fields['Password'].get()
+            # Save application
+            from utils.filehandling import fileHandling
+            success, applicationId = fileHandling.saveApplication(
+                fName, lName, phone, email, initialBal, bankType
             )
             
-            messagebox.showinfo('Success', f'Account successfully created!\nYour account number is: {account.accountNumber}\n' f'Login to continue.')
-            window.destroy()
+            if success:
+                messagebox.showinfo('Application Submitted', 
+                                f'Your application has been submitted successfully!\n\n'
+                                f'Application ID: {applicationId}\n\n'
+                                f'Our staff will review your application and you will be '
+                                f'notified when your account is approved.')
+                window.destroy()
+            else:
+                messagebox.showerror('Error', f'Failed to submit application: {applicationId}')
         except Exception as e:
-            messagebox.showerror('Error', f'Failed to create account: {str(e)}')
+            messagebox.showerror('Error', f'Failed to submit application: {str(e)}')
 
     def _updateAccount(self, fields, window):
         try:
