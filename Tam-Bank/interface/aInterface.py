@@ -31,7 +31,7 @@ class AdminGUIinterface:
         
         # Information Bar
         self.userLabel = Label(headerFrame, 
-                            text=f"Current User's Login: INB-{username}", 
+                            text=f"{username}", 
                             font=('Helvetica', 12), 
                             bg="#333333", fg="white")
         self.userLabel.pack(side=LEFT, padx=20, pady=10)
@@ -49,14 +49,17 @@ class AdminGUIinterface:
         style.configure('TNotebook.Tab', font=('Helvetica','12'))
         tabControl = ttk.Notebook(self.mainWindow)
         accountsTab = Frame(tabControl)
+        applicationsTab = Frame(tabControl)
         transactionsTab = Frame(tabControl)
         systemTab = Frame(tabControl)
         tabControl.add(accountsTab, text="Account Management")
         tabControl.add(transactionsTab, text="Transaction History")
+        tabControl.add(applicationsTab, text = "Applications")
         tabControl.add(systemTab, text="System")
         tabControl.pack(expand=1, fill=BOTH)
         self._setupAccountsTab(accountsTab)
         self._setupTransactionsTab(transactionsTab)
+        self._setupApplicationsTab(applicationsTab)
         self._setupSystemTab(systemTab)
         
         # Footer logout
@@ -68,6 +71,338 @@ class AdminGUIinterface:
         logoutBtn.pack(side=RIGHT, padx=20, pady=10)
         
         self.mainWindow.mainloop()
+
+    def _setupApplicationsTab(self,frame):
+        """ set up for application tab """
+        header = Label(frame, text = 'Applications Management', font=('Helvetica', 18, 'bold'))
+        header.pack(pady=20)
+
+        filterFrame = Frame(frame)
+        filterFrame.pack(fill = X, padx = 20, pady = 10)
+
+        filterLabel = Label(filterFrame, text="Filter by status:", font=('Helvetica', 12))
+        filterLabel.pack(side=LEFT, padx=5)
+
+        statusVar = StringVar()
+        statusVar.set('All')
+
+        statusDropdown = ttk.Combobox(filterFrame, textvariable = statusVar,
+                                      values = ["All", "Pending", "Accepted", "Declined"],
+                                      state = "readonly", width = 15)
+        statusDropdown.pack(side = LEFT, padx=5)
+
+        filterBtn = Button(filterFrame, text = "Apply Filter", font = ('Helvetica', 12),
+                           command = lambda: self._loadApplications(applicationsTree, statusVar.get()))
+        filterBtn.pack(side = LEFT, padx = 5)
+
+        refreshBtn = Button(filterFrame, text = "Refresh" , font=('Helvetica', 12),
+                            command = lambda: self._loadApplications(applicationsTree, statusVar.get()))
+        refreshBtn.pack(side= LEFT, padx = 5)
+
+        treeFrame = Frame(frame)
+        treeFrame.pack(fill=BOTH, expand = True, padx = 20, pady = 10)
+        
+        columns = ('application_id', 'name', 'bank_type', 'status', 'date')
+        applicationsTree = ttk.Treeview(treeFrame, columns=columns, show='headings')
+
+        applicationsTree.heading('application_id', text = 'Application ID')
+        applicationsTree.heading('name', text = 'Applicant Name')
+        applicationsTree.heading('bank_type', text = 'Account Type')
+        applicationsTree.heading('status', text = 'Status')
+        applicationsTree.heading('date', text = 'Application Date')
+
+        applicationsTree.column('application_id', width = 150)
+        applicationsTree.column('name', width = 200)
+        applicationsTree.column('bank_type', width = 120)
+        applicationsTree.column('status', width = 100)
+        applicationsTree.column('date', width=150)
+
+        yScrollBar = ttk.Scrollbar(treeFrame, orient=VERTICAL, command = applicationsTree.yview)
+        applicationsTree.configure(yscrollcommand=yScrollBar.set)
+
+        applicationsTree.pack(side=LEFT, fill=BOTH, expand=True)
+        yScrollBar.pack(side=RIGHT, fill=Y)
+
+        applicationsTree.bind('<Double-1>', lambda e: self._viewApplicationDetails(applicationsTree))
+
+        actionsFrame = Frame(frame)
+        actionsFrame.pack(fill=X, padx=20, pady=10)
+
+        viewBtn = Button(actionsFrame, text="View Details", font = ('Helvetica', 12), command= lambda: self._viewApplicationDetails(applicationsTree))
+        viewBtn.pack(side=LEFT, padx = 5)
+        approveBtn = Button(actionsFrame, text="Approve Application", font = ('Helvetica', 12),bg='#4CAF50', fg='white', command= lambda: self._approveApplication(applicationsTree))
+        approveBtn.pack(side = LEFT, padx= 5)
+        declineBtn = Button(actionsFrame, text="Decline Application", font = ('Helvetica', 12),bg = '#f44336',fg = 'white', command= lambda: self._declineApplication(applicationsTree))
+        declineBtn.pack(side = LEFT, padx= 5)
+
+        self._loadApplications(applicationsTree)
+
+    def _loadApplications(self, tree, statusFilter = "ALL"):
+        """ Load applications """
+        for item in tree.get_children():
+            tree.delete(item)
+        
+        try:
+            from utils.filehandling import fileHandling
+            
+            # Load all applications
+            applications = fileHandling.loadApplications()
+            
+            # Filter by status if needed
+            if statusFilter != "All":
+                applications = [app for app in applications if app['status'] == statusFilter]
+            
+            if not applications:
+                tree.insert('', 'end', values=('', 'No applications found', '', '', ''))
+                return
+            
+            # Custom coloring based on status
+            tree.tag_configure('pending', background='#fff9c4')
+            tree.tag_configure('accepted', background='#c8e6c9')
+            tree.tag_configure('declined', background='#ffcdd2')
+            
+            for app in applications:
+                name = f"{app['fName']} {app['lName']}"
+                date = app['applicationDate'].strftime("%Y-%m-%d %H:%M:%S")
+                
+                item_id = tree.insert('', 'end', values=(
+                    app['applicationId'],
+                    name,
+                    app['bankType'],
+                    app['status'],
+                    date
+                ))
+                
+                status_tag = app['status'].lower()
+                if status_tag in ['pending', 'accepted', 'declined']:
+                    tree.item(item_id, tags=(status_tag,))
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not load applications: {str(e)}")
+            tree.insert('', 'end', values=('', f'Error: {str(e)}', '', '', ''))
+
+    def _viewApplicationDetails(self, tree):
+        """ view details of applicant """
+        selected = tree.selection()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select an application to view.")
+            return
+
+        application_ID= tree.item(selected[0])['values'][0]
+
+        try:
+            from utils.filehandling import fileHandling
+            applications = fileHandling.loadApplications()
+
+            application = None
+            for app in applications:
+                if app['applicationId'] == application_ID:
+                    application = app
+                    break
+            
+            if not application:
+                messagebox.showerror("Error", f"Application {application_ID} not found")
+                return
+
+            detailWindow = Toplevel(self.mainWindow)
+            detailWindow.title(f"Application Details - {application_ID}")
+            detailWindow.geometry("500x400")
+            detailWindow.grab_set()
+
+            Label(detailWindow, text = "Application Details", font = ('Helvetica', 16 , 'bold'))
+
+            detailsFrame = Frame(detailWindow)
+            detailsFrame.pack(fill=BOTH, expand = True , padx=20, pady=10)
+
+            fields = [
+                ('Application ID', application['applicationId']),
+                ('Full Name', f"{application['fName']} {application['lName']}"),
+                ('Phone Number', application['mobileNo']),
+                ('Email', application['email']),
+                ('Initial Balance', f"PHP{application['initialBal']:.2f}"),
+                ('Account Type', application['bankType']),
+                ('Status', application['status']),
+                ('Application Date', application['applicationDate'].strftime("%Y-%m-%d %H:%M:%S"))
+            ]
+
+            for i, (field, value) in enumerate(fields):
+                Label(detailsFrame, text=field, font=('Helvetica', 12, 'bold')).grid(row=i, column=0, sticky=W, pady=5)
+                Label(detailsFrame, text=value, font=('Helvetica', 12)).grid(row=i, column=1, sticky=W, pady=5)
+            
+            btnFrame = Frame(detailWindow)
+            btnFrame.pack(fill=X, pady=10)
+            
+            if application['status'] == "Pending":
+                approveBtn = Button(btnFrame, text="Approve", font=('Helvetica', 12),
+                                bg='#4CAF50', fg='white',
+                                command=lambda: self._processApplicationApproval(application, detailWindow, tree))
+                approveBtn.pack(side=LEFT, padx=10)
+                
+                declineBtn = Button(btnFrame, text="Decline", font=('Helvetica', 12),
+                                bg='#f44336', fg='white',
+                                command=lambda: self._processApplicationDecline(application, detailWindow, tree))
+                declineBtn.pack(side=LEFT, padx=10)
+            
+            closeBtn = Button(btnFrame, text="Close", font=('Helvetica', 12),
+                            command=detailWindow.destroy)
+            closeBtn.pack(side=RIGHT, padx=10)
+    
+        except Exception as e:
+            messagebox.showerror("Error", f"Error viewing application: {str(e)}")
+
+    def _approveApplication(self, tree):
+        """Approve the selected application"""
+        selected = tree.selection()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select an application to approve")
+            return
+        
+        app_id = tree.item(selected[0])['values'][0]
+        status = tree.item(selected[0])['values'][3]
+        
+        if status != "Pending":
+            messagebox.showwarning("Cannot Approve", "Only pending applications can be approved")
+            return
+        
+        try:
+            from utils.filehandling import fileHandling
+            applications = fileHandling.loadApplications()
+            
+            application = None
+            for app in applications:
+                if app['applicationId'] == app_id:
+                    application = app
+                    break
+            
+            if not application:
+                messagebox.showerror("Error", f"Application {app_id} not found")
+                return
+            
+            self._processApplicationApproval(application, None, tree)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error approving application: {str(e)}")
+
+    def _declineApplication(self, tree):
+        """Decline the selected application"""
+        selected = tree.selection()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select an application to decline")
+            return
+        
+        app_id = tree.item(selected[0])['values'][0]
+        status = tree.item(selected[0])['values'][3]
+        
+        if status != "Pending":
+            messagebox.showwarning("Cannot Decline", "Only pending applications can be declined")
+            return
+        
+        try:
+            from utils.filehandling import fileHandling
+            applications = fileHandling.loadApplications()
+            
+            application = None
+            for app in applications:
+                if app['applicationId'] == app_id:
+                    application = app
+                    break
+            
+            if not application:
+                messagebox.showerror("Error", f"Application {app_id} not found")
+                return
+            
+            self._processApplicationDecline(application, None, tree)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error declining application: {str(e)}")
+
+    def _processApplicationApproval(self, application, detailWindow=None, tree=None):
+        """Process application approval and create new account"""
+        confirm = messagebox.askyesno("Confirm Approval", 
+                                f"Are you sure you want to approve this application from {application['fName']} {application['lName']}?\n\n"
+                                f"This will create a new {application['bankType']} account.")
+        
+        if not confirm:
+            return
+        
+        try:
+            from utils.filehandling import fileHandling
+            success, message = fileHandling.updateApplicationStatus(application['applicationId'], "Accepted")
+            
+            if not success:
+                messagebox.showerror("Error", f"Failed to update application status: {message}")
+                return
+            
+            account = self.bank.createAccount(
+                application['fName'],
+                application['lName'],
+                application['initialBal'],
+                application['mobileNo'],
+                application['email']
+            )
+            
+            if account:
+                messagebox.showinfo("Success", 
+                                f"Application approved successfully!\n\n"
+                                f"New account created with ID: {account.accountNumber}")
+                
+                if detailWindow:
+                    detailWindow.destroy()
+                
+                if tree:
+                    self._loadApplications(tree)
+                
+                for tab in self.mainWindow.winfo_children():
+                    if isinstance(tab, ttk.Notebook):
+                        for tabId in tab.tabs():
+                            tabName = tab.tab(tabId, "text")
+                            if tabName == "Account Management":
+                                tabFrame = self.mainWindow.nametowidget(tabId)
+                                for widget in tabFrame.winfo_children():
+                                    if isinstance(widget, Frame):
+                                        for child in widget.winfo_children():
+                                            if isinstance(child, ttk.Treeview):
+                                                self._loadAccounts(child)
+                                                break
+                
+                if hasattr(self, 'statsLabels'):
+                    self._refreshSystemStats()
+            else:
+                messagebox.showerror("Error", "Failed to create account")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"Error processing approval: {str(e)}")
+
+    def _processApplicationDecline(self, application, detailWindow=None, tree=None):
+        """Process application decline"""
+        confirm = messagebox.askyesno("Confirm Decline", 
+                                f"Are you sure you want to decline this application from {application['fName']} {application['lName']}?")
+        
+        if not confirm:
+            return
+        
+        try:
+            # Update application status
+            from utils.filehandling import fileHandling
+            success, message = fileHandling.updateApplicationStatus(application['applicationId'], "Declined")
+            
+            if success:
+                messagebox.showinfo("Success", "Application declined successfully")
+                
+                # Close detail window if it exists
+                if detailWindow:
+                    detailWindow.destroy()
+                
+                # Reload applications list
+                if tree:
+                    self._loadApplications(tree)
+            else:
+                messagebox.showerror("Error", f"Failed to update application status: {message}")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"Error processing decline: {str(e)}")
+
+
 
     def _updateClock(self):
         """ Update clock every second """
