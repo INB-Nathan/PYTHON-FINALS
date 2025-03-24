@@ -184,11 +184,11 @@ class GUIinterface:
             
         
         password = fields['Password'].get()
-        has_digit = any(char.isdigit() for char in password)
-        has_letter = any(char.isalpha() for char in password)
-        has_special = any(not char.isalnum() for char in password)
+        hasDigit = any(char.isdigit() for char in password)
+        hasLetter = any(char.isalpha() for char in password)
+        hasSpecial = any(not char.isalnum() for char in password)
 
-        if len(password) < 6 or not has_digit or not has_letter or not has_special:
+        if len(password) < 6 or not hasDigit or not hasLetter or not hasSpecial:
             messagebox.showerror('Error', 'Password must be at least 6 characters long and contain at least one letter, number, and special character.')
             return
 
@@ -230,6 +230,10 @@ class GUIinterface:
             lName = fields['Last Name'].get()
             mobileNo = fields['Phone Number'].get()
             email = fields['Email'].get()
+
+            if not fName.isalpha() or not lName.isalpha():
+                messagebox.showerror('Error', 'First and Last name must only contain letters.')
+                return
             
             # phone number validation
             if not (mobileNo.isdigit() and mobileNo.startswith('09') and len(mobileNo) == 11):
