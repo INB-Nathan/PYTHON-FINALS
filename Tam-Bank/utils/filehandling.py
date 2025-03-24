@@ -165,3 +165,89 @@ class fileHandling:
         except Exception as e:
             print(f"Error loading transactions: {e}")
             return []
+        
+    @staticmethod
+    def loadApplications(status=None):
+        """Load all applications or filter by status"""
+        applications = []
+        
+        if not os.path.exists(fileHandling.applicationFile):
+            return applications
+        
+        try:
+            with open(fileHandling.applicationFile, "r", newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                
+                for row in reader:
+                    # Filter by status if specified
+                    if status and row['Status'] != status:
+                        continue
+                        
+                    # Convert initial balance to float
+                    try:
+                        initialBal = float(row['Initial Balance']) if row['Initial Balance'] else 0.0
+                    except ValueError:
+                        initialBal = 0.0
+                        
+                    # Parse application date
+                    try:
+                        appDate = datetime.strptime(row['Application Date'], '%Y-%m-%d %H:%M:%S')
+                    except (ValueError, KeyError):
+                        appDate = datetime.now()
+                        
+                    # Create application dictionary
+                    application = {
+                        'applicationId': row['Application ID'],
+                        'fName': row['First Name'],
+                        'lName': row['Last Name'],
+                        'mobileNo': row['Mobile Number'],
+                        'email': row['Email'],
+                        'initialBal': initialBal,
+                        'bankType': row['Bank Type'],
+                        'status': row['Status'],
+                        'applicationDate': appDate
+                    }
+                    
+                    applications.append(application)
+                    
+            return applications
+        except Exception as e:
+            print(f"Error loading applications: {e}")
+            return []
+    
+    @staticmethod
+    def updateApplicationStatus(applicationId, newStatus):
+        """Update the status of an application (Pending, Accepted, Declined)"""
+        if newStatus not in ["Pending", "Accepted", "Declined"]:
+            return False, "Invalid status. Must be Pending, Accepted, or Declined."
+            
+        if not os.path.exists(fileHandling.applicationFile):
+            return False, "Applications file does not exist"
+            
+        try:
+            # Read all applications
+            applications = []
+            updated = False
+            
+            with open(fileHandling.applicationFile, "r", newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                headers = reader.fieldnames
+                
+                for row in reader:
+                    if row['Application ID'] == applicationId:
+                        row['Status'] = newStatus
+                        updated = True
+                    applications.append(row)
+                    
+            if not updated:
+                return False, f"Application with ID {applicationId} not found"
+                
+            # Write back to file
+            with open(fileHandling.applicationFile, "w", newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=headers)
+                writer.writeheader()
+                writer.writerows(applications)
+                
+            return True, f"Application {applicationId} status updated to {newStatus}"
+        except Exception as e:
+            return False, f"Error updating application status: {e}"

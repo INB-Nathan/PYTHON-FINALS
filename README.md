@@ -63,7 +63,6 @@ The system provides GUI interface for managing bank accounts, performing financi
 
 ### Prerequisites
 - Python 3.8 or higher
-- 
 
 ## 👥 Team Members
 
