@@ -157,6 +157,13 @@ class GUIinterface:
             if not entry.get().strip() and field != 'Balance':
                 messagebox.showerror('Error', f'{field} field cannot be empty.')
                 return
+            
+        # name validation
+        fName = fields['First Name'].get()
+        lName = fields['Last Name'].get()
+        if not fName.isalpha() or not lName.isalpha():
+            messagebox.showerror('Error', 'First and Last name must only contain letters.')
+            return
         
         # phone number validation
         phone = fields['Phone Number'].get()
