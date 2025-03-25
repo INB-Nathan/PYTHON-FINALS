@@ -598,69 +598,121 @@ class AdminGUIinterface:
         self._refreshSystemStats()
 
     def _createStatsDisplay(self, frame):
-        """Create the system statistics display widgets"""
+        """Create the system statistics display widgets with detailed account status counts"""
+        # Account statistics section
+        accountsHeaderFrame = Frame(frame)
+        accountsHeaderFrame.pack(fill=X, pady=5, padx=20)
+        Label(accountsHeaderFrame, text="Account Statistics", 
+            font=('Helvetica', 12, 'bold', 'underline')).pack(anchor=W)
+        
+        # Total accounts 
         totalAccFrame = Frame(frame)
-        totalAccFrame.pack(fill=X, pady=10, padx=20)
-        
+        totalAccFrame.pack(fill=X, pady=5, padx=20)
         Label(totalAccFrame, text="Total Customer Accounts:", 
-             font=('Helvetica', 12, 'bold')).pack(side=LEFT)
-        
+            font=('Helvetica', 12, 'bold')).pack(side=LEFT)
         self.statsLabels['total_accounts'] = Label(totalAccFrame, 
-                                             text="0", 
-                                             font=('Helvetica', 12))
+                                            text="0", 
+                                            font=('Helvetica', 12))
         self.statsLabels['total_accounts'].pack(side=LEFT, padx=10)
         
-        activeAccFrame = Frame(frame)
-        activeAccFrame.pack(fill=X, pady=10, padx=20)
+        # Account status breakdown section - Added detailed status counts
+        statusFrame = LabelFrame(frame, text="Account Status Breakdown", font=('Helvetica', 11))
+        statusFrame.pack(fill=X, pady=5, padx=20)
         
-        Label(activeAccFrame, text="Active Customer Accounts:", 
-             font=('Helvetica', 12, 'bold')).pack(side=LEFT)
-        
+        # Active accounts
+        activeAccFrame = Frame(statusFrame)
+        activeAccFrame.pack(fill=X, pady=3)
+        Label(activeAccFrame, text="Active:", 
+            font=('Helvetica', 11)).pack(side=LEFT, padx=10)
         self.statsLabels['active_accounts'] = Label(activeAccFrame, 
-                                              text="0", 
-                                              font=('Helvetica', 12))
-        self.statsLabels['active_accounts'].pack(side=LEFT, padx=10)
+                                            text="0", 
+                                            font=('Helvetica', 11),
+                                            fg='green')
+        self.statsLabels['active_accounts'].pack(side=LEFT, padx=5)
+        
+        # Inactive accounts
+        inactiveAccFrame = Frame(statusFrame)
+        inactiveAccFrame.pack(fill=X, pady=3)
+        Label(inactiveAccFrame, text="Inactive:", 
+            font=('Helvetica', 11)).pack(side=LEFT, padx=10)
+        self.statsLabels['inactive_accounts'] = Label(inactiveAccFrame, 
+                                                text="0", 
+                                                font=('Helvetica', 11),
+                                                fg='orange')
+        self.statsLabels['inactive_accounts'].pack(side=LEFT, padx=5)
+        
+        # Suspended accounts
+        suspendedAccFrame = Frame(statusFrame)
+        suspendedAccFrame.pack(fill=X, pady=3)
+        Label(suspendedAccFrame, text="Suspended:", 
+            font=('Helvetica', 11)).pack(side=LEFT, padx=10)
+        self.statsLabels['suspended_accounts'] = Label(suspendedAccFrame, 
+                                                text="0", 
+                                                font=('Helvetica', 11),
+                                                fg='red')
+        self.statsLabels['suspended_accounts'].pack(side=LEFT, padx=5)
+        
+        # Closed accounts
+        closedAccFrame = Frame(statusFrame)
+        closedAccFrame.pack(fill=X, pady=3)
+        Label(closedAccFrame, text="Closed:", 
+            font=('Helvetica', 11)).pack(side=LEFT, padx=10)
+        self.statsLabels['closed_accounts'] = Label(closedAccFrame, 
+                                            text="0", 
+                                            font=('Helvetica', 11),
+                                            fg='gray')
+        self.statsLabels['closed_accounts'].pack(side=LEFT, padx=5)
+        
+        # Financial statistics section
+        financialHeaderFrame = Frame(frame)
+        financialHeaderFrame.pack(fill=X, pady=5, padx=20)
+        Label(financialHeaderFrame, text="Financial Statistics", 
+            font=('Helvetica', 12, 'bold', 'underline')).pack(anchor=W, pady=(10,0))
         
         balanceFrame = Frame(frame)
-        balanceFrame.pack(fill=X, pady=10, padx=20)
-        
+        balanceFrame.pack(fill=X, pady=5, padx=20)
         Label(balanceFrame, text="Total Customer Balance:", 
-             font=('Helvetica', 12, 'bold')).pack(side=LEFT)
-        
+            font=('Helvetica', 12, 'bold')).pack(side=LEFT)
         self.statsLabels['total_balance'] = Label(balanceFrame, 
                                             text="PHP 0.00", 
                                             font=('Helvetica', 12))
         self.statsLabels['total_balance'].pack(side=LEFT, padx=10)
         
+        # Transaction statistics section
+        transHeaderFrame = Frame(frame)
+        transHeaderFrame.pack(fill=X, pady=5, padx=20)
+        Label(transHeaderFrame, text="Transaction Statistics", 
+            font=('Helvetica', 12, 'bold', 'underline')).pack(anchor=W, pady=(10,0))
+        
         recentTransFrame = Frame(frame)
-        recentTransFrame.pack(fill=X, pady=10, padx=20)
-        
+        recentTransFrame.pack(fill=X, pady=5, padx=20)
         Label(recentTransFrame, text="Transactions (Last 7 Days):", 
-             font=('Helvetica', 12, 'bold')).pack(side=LEFT)
-        
+            font=('Helvetica', 12, 'bold')).pack(side=LEFT)
         self.statsLabels['recent_transactions'] = Label(recentTransFrame, 
-                                                  text="0", 
-                                                  font=('Helvetica', 12))
+                                                text="0", 
+                                                font=('Helvetica', 12))
         self.statsLabels['recent_transactions'].pack(side=LEFT, padx=10)
         
+        # Last updated timestamp
         updateTimeFrame = Frame(frame)
         updateTimeFrame.pack(fill=X, pady=10, padx=20)
-        
         Label(updateTimeFrame, text="Last Updated:", 
-             font=('Helvetica', 10)).pack(side=LEFT)
-        
+            font=('Helvetica', 10)).pack(side=LEFT)
         self.statsLabels['update_time'] = Label(updateTimeFrame, 
-                                          text="Never", 
-                                          font=('Helvetica', 10))
+                                        text="Never", 
+                                        font=('Helvetica', 10))
         self.statsLabels['update_time'].pack(side=LEFT, padx=10)
 
     def _refreshSystemStats(self):
-        """Refresh the system statistics display"""
+        """Refresh the system statistics display with detailed account status counts"""
         try:
             stats = self._getCustomerStats()
             
             self.statsLabels['total_accounts'].config(text=str(stats['total_accounts']))
             self.statsLabels['active_accounts'].config(text=str(stats['active_accounts']))
+            self.statsLabels['inactive_accounts'].config(text=str(stats['inactive_accounts']))
+            self.statsLabels['suspended_accounts'].config(text=str(stats['suspended_accounts']))
+            self.statsLabels['closed_accounts'].config(text=str(stats['closed_accounts']))
             self.statsLabels['total_balance'].config(text=f"PHP {stats['total_balance']:.2f}")
             self.statsLabels['recent_transactions'].config(text=str(stats['recent_transactions']))
             
@@ -670,25 +722,59 @@ class AdminGUIinterface:
             messagebox.showerror("Error", f"Failed to load system statistics: {str(e)}")
 
     def _getCustomerStats(self):
-        """Get system statistics excluding admin accounts"""
-        bankStats = self.bank.getSystemStats()
+        """Get detailed system statistics with account status breakdown"""
+        # Initialize statistics dictionary with default values
+        stats = {
+            'total_accounts': 0,
+            'active_accounts': 0,
+            'inactive_accounts': 0, 
+            'suspended_accounts': 0,
+            'closed_accounts': 0,
+            'total_balance': 0.0,
+            'recent_transactions': 0
+        }
         
-        stats = {}
-        
-        accounts = self.bank.getAllAccounts()
-        adminAccounts = [acc for acc in accounts if acc.accountNumber.lower() == 'admin']
-        
-        stats['total_accounts'] = bankStats['total_accounts'] - len(adminAccounts)
-        
-        adminActiveCount = sum(1 for acc in adminAccounts if acc.status.lower() == 'active')
-        stats['active_accounts'] = bankStats['active_accounts'] - adminActiveCount
-        
-        adminBalance = sum(acc.balance for acc in adminAccounts)
-        stats['total_balance'] = bankStats['total_balance'] - adminBalance
-        
-        stats['recent_transactions'] = bankStats['recent_transactions']
-        
-        return stats
+        try:
+            # Get all accounts from the system
+            accounts = self.bank.getAllAccounts()
+            
+            # Filter out admin accounts
+            customer_accounts = [acc for acc in accounts if acc.accountNumber.lower() != 'admin']
+            
+            # Count total customer accounts
+            stats['total_accounts'] = len(customer_accounts)
+            
+            # Count accounts by status with case-insensitive comparison
+            for account in customer_accounts:
+                status = account.status.lower()
+                
+                # Add balance to total
+                stats['total_balance'] += account.balance
+                
+                # Count accounts by status
+                if status == 'active':
+                    stats['active_accounts'] += 1
+                elif status == 'inactive':
+                    stats['inactive_accounts'] += 1
+                elif status == 'suspended':
+                    stats['suspended_accounts'] += 1
+                elif status == 'closed':
+                    stats['closed_accounts'] += 1
+            
+            # Get transaction statistics from bank service
+            try:
+                bank_stats = self.bank.getSystemStats()
+                stats['recent_transactions'] = bank_stats.get('recent_transactions', 0)
+            except Exception:
+                # Handle missing transaction data gracefully
+                pass
+                
+            return stats
+            
+        except Exception as e:
+            print(f"Error calculating customer statistics: {e}")
+            # Return default stats in case of error
+            return stats
 
     def _findAccount(self, accountId):
         """Efficient account lookup function"""
