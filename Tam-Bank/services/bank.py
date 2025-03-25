@@ -128,7 +128,13 @@ class TamBank:
         if not account:
             return False, "Account not found"
         
+        status_valid, status_message = self._validateAccountStatus(account, "deposit")
+        if not status_valid:
+            return False, status_message
+        
         amount = float(amount) if not isinstance(amount, float) else amount
+
+        
 
         if float(amount) <= 0:
             return False, "Deposit amount must be greater than 0"
@@ -145,6 +151,10 @@ class TamBank:
         account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
+        
+        status_valid, status_message = self._validateAccountStatus(account, "withdrawal")
+        if not status_valid:
+            return False, status_message
         
         amount = float(amount) if not isinstance(amount, float) else amount
 
@@ -171,8 +181,14 @@ class TamBank:
         if not toAcc:
             return False, "Recipient account not found"
         
-        if fromAccount.status.lower() == "closed":
-            return False, "Cannot Transfer to a closed account"
+        status_valid, status_message = self._validateAccountStatus(fromAccount, "transfer")
+        if not status_valid:
+            return False, status_message
+        
+        status_valid, status_message = self._validateAccountStatus(toAccount, "transfer")
+        if not status_valid:
+            return False, status_message
+
         
         amount = float(amount)
         if fromAccount.balance < amount:
@@ -618,4 +634,20 @@ class TamBank:
             
         except Exception as e:
             print(f"Error updating {filePAth}: {str(e)}")
+
+    def _validateAccountStatus(self, account, operation="transaction"):
+        """ Validate that an account is in the appropriate status for transactions """
+        if not account:
+            return False, "Account not found"
+            
+        status = account.status.lower()
         
+        if status == "active":
+            return True, ""
+        elif status == "closed":
+            return False, f"Cannot perform {operation}: Account is closed"
+        elif status == "suspended":
+            return False, f"Cannot perform {operation}: Account is suspended"
+        else:  # "inactive" or any other status
+            return False, f"Cannot perform {operation}: Account is {account.status}"
+            
