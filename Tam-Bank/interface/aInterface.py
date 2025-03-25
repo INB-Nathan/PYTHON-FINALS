@@ -333,18 +333,22 @@ class AdminGUIinterface:
                 messagebox.showerror("Error", f"Failed to update application status: {message}")
                 return
             
+            defaultPin = 'TamBank123@!'
             account = self.bank.createAccount(
                 application['fName'],
                 application['lName'],
                 application['initialBal'],
                 application['mobileNo'],
-                application['email']
+                application['email'],
+                defaultPin
             )
             
             if account:
                 messagebox.showinfo("Success", 
                                 f"Application approved successfully!\n\n"
-                                f"New account created with ID: {account.accountNumber}")
+                                f"New account created with ID: {account.accountNumber}\n\n"
+                                f"Default PIN is set to: {defaultPin}\n\n"
+                                f"Inform the customer to change their pin on login.")
                 
                 if detailWindow:
                     detailWindow.destroy()
