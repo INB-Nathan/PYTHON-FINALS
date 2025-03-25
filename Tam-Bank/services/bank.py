@@ -41,6 +41,55 @@ class TamBank:
         self.accounts[accountNumber] = account
         self._saveAccounts()
         return account
+
+    def _checkAccountStatus(self, accountNumber):
+        """ Check if the account has been inactive for 3 months and update the status """
+        from datetime import datetime, timedelta
+        
+        account = self.getAccount(accountNumber)
+        if not account or account.status.lower() != "active":
+            return False
+        
+        transactions = self.getAccountTransactions(accountNumber)
+        
+        if not transactions:
+            last_activity_date = account.dateOpened
+        else:
+            last_activity_date = max(transaction['date'] for transaction in transactions)
+        
+        current_date = datetime.now()
+        three_months_ago = current_date - timedelta(days=90)
+        
+        if last_activity_date < three_months_ago:
+            account.status = "Inactive"
+            
+            description = f"Account status changed to Inactive due to 3 months of inactivity"
+            self._saveTransaction(accountNumber, "SYSTEM", 0.0, description)
+            
+            self._saveAccounts()
+            
+            return True
+        
+        return False
+    
+    def reactivateAccount(self,accountNumber):
+        """ reactivates an account when there is activity not just logging in. """
+
+        account = self.getAccount(accountNumber)
+        if not account:
+            return False, "Account not found"
+        
+        if account.status.lower() != "inactive":
+            return False, f"Account is not inactive. Current status: {account.status}"
+        
+        account.status = "Active"
+        
+        description = "Account reactivated"
+        self._saveTransaction(accountNumber, "SYSTEM", 0.0, description)
+        
+        self._saveAccounts()
+        
+        return True, "Account successfully reactivated"
     
     def authPass(self, accountNumber, password):
         """ Authenticate the password with debugging """
@@ -49,8 +98,14 @@ class TamBank:
         account = self.getAccount(accountNumber)
         if not account:
             return False, "Account not found"
+        
+        if not self.isAdmin(accountNumber):
+            self._checkAccountStatus(accountNumber)
+        
+            account = self.getAccount(accountNumber)
+
                 
-        if account.status != "Active":
+        if account.status.lower() != "active":
             return False, "This account is not active"
                 
         if not hasattr(account, 'passHash') or not account.passHash:
