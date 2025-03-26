@@ -1,11 +1,11 @@
 from datetime import datetime
 from utils.password import Password
-from utils.filehandling import fileHandling
+from utils.filehandling import FileHandling
 import random
 
 class Account:
     """ Class account that will register and handle operations of the account management and transaction processing system, as well as record the transactions per account. """
-    def __init__(self, accountNumber=None, fName="", lName="", initialBal=0.0, mobileNo="", email="", passHash=None):
+    def __init__(self, accountNumber=None, fName="", lName="", initialBal=0.0, mobileNo="", email="", passHash=None, bankType = 'Savings'):
         """ Initialize the account with the following details: """
         self.accountNumber = accountNumber if accountNumber else str(random.randint(20210000, 20230000))
         self.fName = fName
@@ -22,7 +22,7 @@ class Account:
         self.transactions = []
         self.status = "Active"
         self.passHash = passHash
-        
+        self.bankType = bankType
         if initialBal > 0:
             self._recordTransaction("Initial Deposit", initialBal)
 

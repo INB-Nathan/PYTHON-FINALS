@@ -109,56 +109,81 @@ class GUIinterface:
             txtPass.delete(0, END)
 
     def _showApplyScreen(self):
-        """Display the account application screen"""
-        # add styling
+        """Display the account application screen with minimum balance requirements"""
+        # Define minimum balances as constants for maintainability
+        MIN_BALANCES = {
+            "Savings": 500.0,
+            "Checking": 100.0,
+            "Business": 1000.0
+        }
+        
+        # Add styling
         lblFont = ('Helvetica', 18, 'bold')
         txtFont = ('Helvetica', 18)
         btnFont = ('Helvetica', 16)
+        infoFont = ('Helvetica', 12)
 
         applyScreen = Toplevel(self.mainWindow)
         applyScreen.title('Become a Tam-Bank Member!')
-        applyScreen.geometry('800x700')
+        applyScreen.geometry('540x600')
         applyScreen.resizable(False, False)
         applyScreen.grab_set()
 
-        lblHeader = Label(applyScreen, text = "Bank Account Application", font = ('Arial' , 24, 'bold'))
-        lblHeader.grid(row= 0, column = 0, columnspan = 2, pady = 20)
+        lblHeader = Label(applyScreen, text="TamBank Account Application", font=('Arial', 24, 'bold'), fg = "green")
+        lblHeader.grid(row=0, column=0, columnspan=2, pady=20)
+        
         fields = {}
         row = 1
 
-        for field in ['First Name' , 'Last Name', 'Phone Number', 'Email', 'Initial Balance']:
-            lbl = Label(applyScreen, text = f'{field}:', font = lblFont)
-            lbl.grid(row = row, column = 0,sticky='w', padx = 20, pady = 10)
-            txt = Entry(applyScreen, font = txtFont)
-            txt.grid (row=row, column = 1, padx = 20, pady=5 )
+        for field in ['First Name', 'Last Name', 'Phone Number', 'Email', 'Initial Balance']:
+            lbl = Label(applyScreen, text=f'{field}:', font=lblFont)
+            lbl.grid(row=row, column=0, sticky='w', padx=20, pady=10)
+            txt = Entry(applyScreen, font=txtFont)
+            txt.grid(row=row, column=1, padx=20, pady=5)
             fields[field] = txt
             row += 1
         
         # Account Type
-        lbl = Label(applyScreen, text = 'Account Type:', font=lblFont)
-        lbl.grid (row=row, column = 0, sticky='w', padx=20, pady=10)
+        lbl = Label(applyScreen, text='Account Type:', font=lblFont)
+        lbl.grid(row=row, column=0, sticky='w', padx=20, pady=10)
 
         accountTypeVar = StringVar(applyScreen)
-        accountTypeVar.set("Savings")
+        accountTypeVar.set("Savings")  # Default value
 
         accountTypeDropdown = ttk.Combobox(applyScreen,
-                                           textvariable=accountTypeVar
-                                           , values = ['Savings', 'Checking', 'Business'],
-                                           font = txtFont,
-                                           state = 'readonly')
-        accountTypeDropdown.grid(row=row, column = 1, padx = 20 , pady = 5)
+                                        textvariable=accountTypeVar,
+                                        values=['Savings', 'Checking', 'Business'],
+                                        font=txtFont,
+                                        state='readonly')
+        accountTypeDropdown.grid(row=row, column=1, padx=20, pady=5)
         fields['Account Type'] = accountTypeVar
         row += 1
 
-        infoFrame = Frame(applyScreen, bg="#e6f7ff", padx=20, pady=10)
+        # Add minimum balance information frame
+        balanceInfoFrame = Frame(applyScreen, bg="#fff8e1", padx=20, pady=10)  # Light amber background
+        balanceInfoFrame.grid(row=row, column=0, columnspan=2, sticky='we', padx=20, pady=5)
+        
+        minimumBalanceLabel = Label(
+            balanceInfoFrame,
+            text=f"Minimum Initial Balance for Savings: PHP {MIN_BALANCES['Savings']:.2f}",
+            font=infoFont,
+            bg="#fff8e1",
+            fg="#d32f2f"  # Red text for emphasis
+        )
+        minimumBalanceLabel.pack(anchor=W)
+        row += 1
+
+        # Application process information
+        infoFrame = Frame(applyScreen, bg="#e8f5e9", padx=20, pady=10)  # Light green background
         infoFrame.grid(row=row, column=0, columnspan=2, sticky='we', padx=20, pady=10)
         
-        infoLabel = Label(infoFrame, 
-                        text="Your application will be reviewed by our staff.\n"
-                            "You will be notified once your account is approved.",
-                        font=('Helvetica', 12),
-                        bg="#e6f7ff",
-                        justify=LEFT)
+        infoLabel = Label(
+            infoFrame,
+            text="Your application will be reviewed by our staff.\nYou will be notified once your account is approved.",
+            font=infoFont,
+            bg="#e8f5e9",
+            justify=LEFT
+        )
         infoLabel.pack(anchor=W)
         row += 1
         
@@ -172,11 +197,40 @@ class GUIinterface:
         btnSubmit.pack(side=LEFT, padx=20)
         btnCancel.pack(side=RIGHT, padx=20)
 
+        # Function to update minimum balance information when account type changes
+        def update_balance_info(*args):
+            selected_type = accountTypeVar.get()
+            min_balance = MIN_BALANCES.get(selected_type, 0.0)
+            
+            # Update minimum balance label
+            minimumBalanceLabel.config(
+                text=f"Minimum Initial Balance for {selected_type}: PHP {min_balance:.2f}"
+            )
+            
+            # Highlight initial balance field if minimum balance required
+            if min_balance > 0:
+                fields['Initial Balance'].config(highlightbackground="#d32f2f", highlightthickness=2)
+            else:
+                fields['Initial Balance'].config(highlightbackground="gray", highlightthickness=1)
+
+        # Track changes to account type dropdown
+        accountTypeVar.trace_add("write", update_balance_info)
+        
+        # Set initial balance field highlight
+        fields['Initial Balance'].config(highlightbackground="#d32f2f", highlightthickness=2)
+        
         applyScreen.mainloop()
 
 
     def _submitApplication(self, fields, window):
         """ Submit a new account application """
+        MIN_BALANCES = {
+            "Savings": 500.0,
+            "Checking": 100.0,
+            "Business": 1000.0
+        }
+        
+        # Field validation
         for field, entry in fields.items():
             if field == 'Account Type':
                 value = entry.get()
@@ -187,37 +241,55 @@ class GUIinterface:
                 messagebox.showerror('Error', f'{field} field cannot be empty.')
                 return
         
-        fName = fields['First Name'].get()
-        lName = fields['Last Name'].get()
+        # Name validation - letters only
+        fName = fields['First Name'].get().strip()
+        lName = fields['Last Name'].get().strip()
         if not fName.isalpha() or not lName.isalpha():
             messagebox.showerror('Error', 'First and Last name must only contain letters.')
             return
         
-        phone = fields['Phone Number'].get()
+        # Phone validation - must be 11 digits starting with 09
+        phone = fields['Phone Number'].get().strip()
         if not (phone.isdigit() and phone.startswith('09') and len(phone) == 11):
             messagebox.showerror('Error', 'Invalid phone number. It should start with 09 and have 11 digits.')
             return
         
-        email = fields['Email'].get()
+        # Email validation - basic format check
+        email = fields['Email'].get().strip()
         if '@' not in email or '.' not in email:
             messagebox.showerror('Error', 'Invalid email format.')
             return
         
+        # Get selected account type
+        bankType = fields['Account Type'].get()
+        min_balance_required = MIN_BALANCES.get(bankType, 0.0)
+        
+        # Validate initial balance
         try:
             initialBal = float(fields['Initial Balance'].get() if fields['Initial Balance'].get() else 0)
             if initialBal < 0:
                 messagebox.showerror('Error', 'Initial balance cannot be negative.')
                 return
+                
+            # Check against minimum balance for the selected account type
+            if initialBal < min_balance_required:
+                messagebox.showerror('Error', 
+                                f'Initial balance for {bankType} accounts must be at least PHP {min_balance_required:.2f}.\n\n'
+                                f'You entered: PHP {initialBal:.2f}')
+                return  # Critical fix: Added return statement to stop processing
         except ValueError:
             messagebox.showerror('Error', 'Initial balance must be a valid number.')
             return
 
-        bankType = fields['Account Type'].get()
-        
         try:
             # Save application
-            from utils.filehandling import fileHandling
-            success, applicationId = fileHandling.saveApplication(
+            from utils.filehandling import FileHandling
+            
+            # Update FileHandling.MIN_BALANCE to match the selected account type's requirement
+            # This ensures consistent validation between UI and backend
+            FileHandling.MIN_BALANCE = min_balance_required
+            
+            success, applicationId = FileHandling.saveApplication(
                 fName, lName, phone, email, initialBal, bankType
             )
             
@@ -229,49 +301,11 @@ class GUIinterface:
                                 f'notified when your account is approved.')
                 window.destroy()
             else:
+                # Error message from the backend
                 messagebox.showerror('Error', f'Failed to submit application: {applicationId}')
         except Exception as e:
             messagebox.showerror('Error', f'Failed to submit application: {str(e)}')
 
-    def _updateAccount(self, fields, window):
-        try:
-            for field, entry in fields.items():
-                if not entry.get().strip():
-                    messagebox.showerror('Error', f'{field} field cannot be empty.')
-                    return
-
-            fName = fields['First Name'].get()
-            lName = fields['Last Name'].get()
-            mobileNo = fields['Phone Number'].get()
-            email = fields['Email'].get()
-
-            if not fName.isalpha() or not lName.isalpha():
-                messagebox.showerror('Error', 'First and Last name must only contain letters.')
-                return
-            
-            # phone number validation
-            if not (mobileNo.isdigit() and mobileNo.startswith('09') and len(mobileNo) == 11):
-                messagebox.showerror('Error', 'Invalid phone number. It should start with 09 and have 11 digits.')
-                return
-
-            # email validation
-            if '@' not in email or '.' not in email:
-                messagebox.showerror('Error', 'Invalid email format.')
-                return
-
-            accountNumber = self.activeAccount.accountNumber
-
-            success, message = self.bank.updateAccount(fName, lName, mobileNo, email, accountNumber)
-
-            if success:
-                messagebox.showinfo('Success', 'Account successfully updated!')
-            else:
-                messagebox.showerror('Error', message)
-
-        except Exception as e:
-            messagebox.showerror('Error', f'Failed to update account: {str(e)}')
-            print(f"Exception occurred: {e}")
-    
     def _depositFunds(self, txtAmount):
         """ Handle deposit action """
         try:
@@ -359,9 +393,7 @@ class GUIinterface:
         withdrawFrame = Frame(contentFrame)
         transferFrame = Frame(contentFrame)
         accountHistoryFrame = Frame(contentFrame)
-        changeUpdateFrame = Frame(contentFrame)
         changePassFrame = Frame(contentFrame)
-        closeFrame = Frame(contentFrame)
         
         self.frames = {
             'account': accountFrame,
@@ -370,8 +402,6 @@ class GUIinterface:
             'transfer': transferFrame,
             'history': accountHistoryFrame,
             'password': changePassFrame,
-            'close': closeFrame,
-            'update': changeUpdateFrame
         }
         
         # Create navigation buttons
@@ -427,18 +457,14 @@ class GUIinterface:
         btnWithdraw.pack(side=LEFT, fill='both', expand=True)
         btnTransfer.pack(side=LEFT, fill='both', expand=True)
         btnHistory.pack(side=LEFT, fill='both', expand=True)
-        btnUpdate.pack(side=LEFT, fill='both', expand=True)
         btnPassword.pack(side=LEFT, fill='both', expand=True)
-        btnClose.pack(side=LEFT, fill='both', expand=True)
         
         self._setupAccountDetails(accountFrame)
         self._setupDeposit(depositFrame)
         self._setupWithdraw(withdrawFrame)
         self._setupTransfer(transferFrame)
         self._setupAccountHistory(accountHistoryFrame)
-        self._setupUpdateDetails(changeUpdateFrame)
         self._setupChangePassword(changePassFrame)
-        self._setupCloseAccount(closeFrame)
         
         logoutbtn = Button(self.mainWindow, text = 'Logout', font = ('Helvetica', 12, 'bold'), command = self._logout)
         logoutbtn.pack(pady=10)
@@ -485,8 +511,6 @@ class GUIinterface:
             else:
                 btn.config(bg=normalColor, fg='black')
             
-
-
     def _setupAccountDetails(self, frame):
         """ Display account details """
         header = Label(frame, text='Account Details', font=('Helvetica', 24, 'bold'))
@@ -507,7 +531,8 @@ class GUIinterface:
             ('Email', account.email),
             ('Balance', f'PHP {account.balance:.2f}'),
             ('Date Opened', account.dateOpened.strftime('%Y-%m-%d')),
-            ('Status', account.status)
+            ('Status', account.status),
+            ('Bank Type', account.bankType)
         ]
 
         for i, (labelText, value) in enumerate(fields):
@@ -621,7 +646,6 @@ class GUIinterface:
 
     def _processTransfer(self, toAccEntry, amountEntry, descEntry, balVal):
         """ transfer money between accounts """
-    
         # first check the account
         try:
             toAcc_number = toAccEntry.get().strip()
@@ -808,46 +832,6 @@ class GUIinterface:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to refresh history: {str(e)}")
 
-    def _setupUpdateDetails(self, frame):
-        """ Display update account """
-        header = Label(frame, text='Update Account', font=('Helvetica', 24, 'bold'))
-        header.pack(pady=20)
-
-        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-
-        updateFrame = Frame(frame)
-        updateFrame.pack(pady=20, fill=X, padx = 50)
-
-        fields = {}
-        account = self.activeAccount
-        field_data = [
-            ('First Name', account.fName),
-            ('Last Name', account.lName),
-            ('Phone Number', account.mobileNo),
-            ('Email', account.email)
-        ]
-
-        for labelText, value in field_data:
-            rowFrame = Frame(updateFrame)
-            rowFrame.pack(fill=X, pady=5)
-            
-            label = Label(rowFrame, text=f"{labelText}:", font=('Helvetica', 14, 'bold'), width=15, anchor='w')
-            label.pack(side=LEFT)
-            
-            entry = Entry(rowFrame, font=('Helvetica', 14))
-            entry.pack(side=LEFT, padx=10, fill=X, expand=True)
-            entry.insert(0, value)
-
-            fields[labelText] = entry
-        
-        btnFrame = Frame(updateFrame)
-        btnFrame.pack(pady=20)
-        
-        btnUpdate = Button(btnFrame, text='Update', font=('Helvetica', 12), 
-                           command=lambda: self._updateAccount(fields, updateFrame))
-        
-        btnUpdate.pack(side=LEFT, padx=10)
-
     def _setupChangePassword(self, frame):
         """ Setup change password functionality """
 
@@ -887,123 +871,6 @@ class GUIinterface:
         btnChangePass = Button(frame, text='Change Password', font=('Helvetica', 12),
                                command=lambda: self._changePassword(txtOldPass, txtNewPass, txtConfirmPass))
         btnChangePass.pack(pady=10)
-
-    def _setupCloseAccount(self, frame):
-        """Create interface for closing an account"""
-        for widget in frame.winfo_children():
-            widget.destroy()
-
-        self.activeAccount = self.bank.getAccount(self.activeAccount.accountNumber)
-            
-        header = Label(frame, text="Close Account", font=('Helvetica', 24, 'bold'))
-        header.pack(pady=20)
-        
-        warningFrame = Frame(frame, bg='#ffcccc', padx=20, pady=20)
-        warningFrame.pack(fill=X, padx=50, pady=10)
-        
-        warningLabel = Label(warningFrame, 
-                            text="⚠️ WARNING: Account closure is permanent! ⚠️", 
-                            font=('Helvetica', 16, 'bold'), 
-                            fg='red',
-                            bg='#ffcccc')
-        warningLabel.pack(pady=5)
-        
-        warningText = Label(warningFrame, 
-                        text="• Your account will be permanently closed\n"
-                                "• All data associated with this account will be marked as inactive\n"
-                                "• You must withdraw or transfer all funds before closing\n"
-                                "• You'll need to create a new account if you want to use TamBank again",
-                        font=('Helvetica', 12),
-                        justify=LEFT,
-                        bg='#ffcccc')
-        warningText.pack(pady=5, anchor=W)
-        
-        balanceFrame = Frame(frame)
-        balanceFrame.pack(fill=X, padx=50, pady=10)
-        
-        balanceLabel = Label(balanceFrame, 
-                            text=f"Current Balance: PHP {self.activeAccount.balance:.2f}",
-                            font=('Helvetica', 14, 'bold'))
-        balanceLabel.pack(anchor=W)
-        
-        if self.activeAccount.balance > 0:
-            balanceWarning = Label(balanceFrame, 
-                                text="You must withdraw all funds before closing your account",
-                                font=('Helvetica', 12),
-                                fg='red')
-            balanceWarning.pack(anchor=W)
-            
-            withdrawBtn = Button(balanceFrame, 
-                                text="Go to Withdraw", 
-                                command=lambda: self._showFrame('withdraw'),
-                                font=('Helvetica', 12))
-            withdrawBtn.pack(pady=10)
-        
-        confirmFrame = Frame(frame)
-        confirmFrame.pack(fill=X, padx=50, pady=20)
-        
-        passwordLabel = Label(confirmFrame, 
-                            text="Enter your password to confirm account closure:",
-                            font=('Helvetica', 12, 'bold'))
-        passwordLabel.pack(anchor=W, pady=5)
-        
-        passwordEntry = Entry(confirmFrame, show="*", font=('Helvetica', 12), width=30)
-        passwordEntry.pack(anchor=W)
-        
-        confirmVar = IntVar()
-        confirmCheck = Checkbutton(confirmFrame, 
-                                    text="I understand that closing my account is permanent and cannot be undone",
-                                    variable=confirmVar,
-                                    font=('Helvetica', 12))
-        confirmCheck.pack(anchor=W, pady=10)
-        
-        btnFrame = Frame(frame)
-        btnFrame.pack(pady=20)
-        
-        cancelBtn = Button(btnFrame, 
-                            text="Cancel", 
-                            font=('Helvetica', 14),
-                            padx=20,
-                            command=lambda: self._showFrame('account'))
-        cancelBtn.pack(side=LEFT, padx=10)
-        
-        closeBtn = Button(btnFrame, 
-                            text="Close Account", 
-                            font=('Helvetica', 14, 'bold'),
-                            bg='#f44336',
-                            fg='white',
-                            padx=20,
-                            command=lambda: self._processAccountClosure(passwordEntry
-                , confirmVar))
-        closeBtn.pack(side=LEFT, padx=10)
-
-    def _processAccountClosure(self, passwordEntry, confirmVar):
-        """Process the account closure request"""
-        if confirmVar.get() != 1:
-            messagebox.showerror("Error", "You must confirm that you understand the consequences of account closure")
-            return
-            
-        password = passwordEntry.get()
-        if not password:
-            messagebox.showerror("Error", "Please enter your password")
-            return
-            
-        success, _ = self.bank.authPass(self.activeAccount.accountNumber, password)
-        if not success:
-            messagebox.showerror("Error", "Invalid password")
-            return
-            
-        if self.activeAccount.balance > 0:
-            messagebox.showerror("Error", "You must withdraw all funds before closing your account")
-            return
-            
-        success, message = self.bank.closeAccount(self.activeAccount.accountNumber)
-        
-        if success:
-            messagebox.showinfo("Account Closed", message)
-            self._logout()
-        else:
-            messagebox.showerror("Error", f"Failed to close account: {message}")
 
     def _logout(self):
         self.activeAccount = None

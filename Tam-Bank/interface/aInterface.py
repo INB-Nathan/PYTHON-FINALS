@@ -143,10 +143,10 @@ class AdminGUIinterface:
             tree.delete(item)
         
         try:
-            from utils.filehandling import fileHandling
+            from utils.filehandling import FileHandling
             
             # Load all applications
-            applications = fileHandling.loadApplications()
+            applications = FileHandling.loadApplications()
             
             # Filter by status if needed
             if statusFilter != "All":
@@ -191,8 +191,8 @@ class AdminGUIinterface:
         application_ID= tree.item(selected[0])['values'][0]
 
         try:
-            from utils.filehandling import fileHandling
-            applications = fileHandling.loadApplications()
+            from utils.filehandling import FileHandling
+            applications = FileHandling.loadApplications()
 
             application = None
             for app in applications:
@@ -250,39 +250,59 @@ class AdminGUIinterface:
         except Exception as e:
             messagebox.showerror("Error", f"Error viewing application: {str(e)}")
 
-    def _approveApplication(self, tree):
-        """Approve the selected application"""
-        selected = tree.selection()
-        if not selected:
-            messagebox.showwarning("No Selection", "Please select an application to approve")
-            return
-        
-        app_id = tree.item(selected[0])['values'][0]
-        status = tree.item(selected[0])['values'][3]
-        
-        if status != "Pending":
-            messagebox.showwarning("Cannot Approve", "Only pending applications can be approved")
-            return
+    def _approveApplication(self, applicationId):
+        """Approve an account application with proper tuple unpacking"""
+        from utils.filehandling import FileHandling
+        # Get the application details
+        application = self._getApplication(applicationId)
+        if not application:
+            return False, "Application not found"
         
         try:
-            from utils.filehandling import fileHandling
-            applications = fileHandling.loadApplications()
+            # Create the account
+            result = self.bank.createAccount(
+                fName=application['fName'],
+                lName=application['lName'],
+                initialBal=application['initialBal'],
+                mobileNo=application['mobileNo'],
+                email=application['email'],
+                accountType=application['bankType']
+            )
             
-            application = None
-            for app in applications:
-                if app['applicationId'] == app_id:
-                    application = app
-                    break
-            
-            if not application:
-                messagebox.showerror("Error", f"Application {app_id} not found")
-                return
-            
-            self._processApplicationApproval(application, None, tree)
-            
+            # Properly unpack the tuple result
+            if isinstance(result, tuple):
+                if len(result) >= 2:
+                    account, message = result
+                    
+                    # Check if account creation was successful
+                    if account:
+                        # Update application status
+                        success, _ = FileHandling.updateApplicationStatus(applicationId, "Accepted")
+                        
+                        # Return success with account number and message
+                        return True, f"Application approved. Account created: {account.accountNumber}"
+                    else:
+                        # Account creation returned a falsy first value
+                        return False, f"Failed to create account: {message}"
+                else:
+                    # Tuple with insufficient elements
+                    return False, "Invalid result format from account creation"
+            else:
+                # For backward compatibility with older versions that might return just an account
+                account = result
+                
+                # Update application status
+                success, _ = FileHandling.updateApplicationStatus(applicationId, "Accepted")
+                
+                # Return success with account number
+                return True, f"Application approved. Account created: {account.accountNumber}"
+                
         except Exception as e:
-            messagebox.showerror("Error", f"Error approving application: {str(e)}")
-
+            # Log the error with detailed information for debugging
+            print(f"Error processing approval: {e}")
+            # Include exception type for better diagnostics
+            return False, f"Error processing approval: {type(e).__name__} - {str(e)}"
+        
     def _declineApplication(self, tree):
         """Decline the selected application"""
         selected = tree.selection()
@@ -298,8 +318,8 @@ class AdminGUIinterface:
             return
         
         try:
-            from utils.filehandling import fileHandling
-            applications = fileHandling.loadApplications()
+            from utils.filehandling import FileHandling
+            applications = FileHandling.loadApplications()
             
             application = None
             for app in applications:
@@ -326,8 +346,8 @@ class AdminGUIinterface:
             return
         
         try:
-            from utils.filehandling import fileHandling
-            success, message = fileHandling.updateApplicationStatus(application['applicationId'], "Accepted")
+            from utils.filehandling import FileHandling
+            success, message = FileHandling.updateApplicationStatus(application['applicationId'], "Accepted")
             
             if not success:
                 messagebox.showerror("Error", f"Failed to update application status: {message}")
@@ -387,8 +407,8 @@ class AdminGUIinterface:
         
         try:
             # Update application status
-            from utils.filehandling import fileHandling
-            success, message = fileHandling.updateApplicationStatus(application['applicationId'], "Declined")
+            from utils.filehandling import FileHandling
+            success, message = FileHandling.updateApplicationStatus(application['applicationId'], "Declined")
             
             if success:
                 messagebox.showinfo("Success", "Application declined successfully")

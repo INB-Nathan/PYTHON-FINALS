@@ -1,6 +1,6 @@
 # import needed dependencies or modules.
 from models.account import Account
-from utils.filehandling import fileHandling
+from utils.filehandling import FileHandling
 from datetime import datetime, timedelta
 import random, csv, os, hashlib
 
@@ -8,24 +8,24 @@ class TamBank:
     """ Manager class for the bank """
     def __init__(self):
         self.accounts = {}
-        accountList = fileHandling.loadFile()
+        accountList = FileHandling.loadFile()
         for account in accountList:
             self.accounts[account.accountNumber] = account
     
     def _loadAccounts(self):
         """ Load the transactions from each account in the .csv file"""
         # load the accounts from the .csv file
-        self.accounts = fileHandling.loadFile(self)
+        self.accounts = FileHandling.loadFile(self)
         # for loop to load the transactions from each account
         for account in self.accounts:
-            account.transactions = fileHandling.loadTransactions(account.accountNumber)
+            account.transactions = FileHandling.loadTransactions(account.accountNumber)
         return len(self.accounts)
     
     def _saveAccounts(self):
         """ Save the accounts to the .csv file """
         # save the accounts to the .csv file
         accountsList = list(self.accounts.values())
-        return fileHandling.saveFile(accountsList)
+        return FileHandling.saveFile(accountsList)
     
     def createAccount(self, fName="", lName="", initialBal=0.0, mobileNo="", email="", password=None):
         """ Create a new account """
@@ -53,14 +53,14 @@ class TamBank:
         transactions = self.getAccountTransactions(accountNumber)
         
         if not transactions:
-            last_activity_date = account.dateOpened
+            lastActivityDate = account.dateOpened
         else:
-            last_activity_date = max(transaction['date'] for transaction in transactions)
+            lastActivityDate = max(transaction['date'] for transaction in transactions)
         
         current_date = datetime.now()
-        three_months_ago = current_date - timedelta(days=90)
+        threeMonthsAgo = current_date - timedelta(days=90)
         
-        if last_activity_date < three_months_ago:
+        if lastActivityDate < threeMonthsAgo:
             account.status = "Inactive"
             
             description = f"Account status changed to Inactive due to 3 months of inactivity"
@@ -105,7 +105,7 @@ class TamBank:
             account = self.getAccount(accountNumber)
 
                 
-        if account.status.lower() != "active":
+        if account.status.lower() not in ["active", "inactive"]:
             return False, "This account is not active"
                 
         if not hasattr(account, 'passHash') or not account.passHash:
