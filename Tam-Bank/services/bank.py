@@ -232,8 +232,8 @@ class TamBank:
         if not fromAccount:
             return False, "Sender account not found"
         
-        toAcc = self.getAccount(toAccount)
-        if not toAcc:
+        toAccount = self.getAccount(toAccount)
+        if not toAccount:
             return False, "Recipient account not found"
         
         status_valid, status_message = self._validateAccountStatus(fromAccount, "transfer")
@@ -250,12 +250,12 @@ class TamBank:
             return False, "Insufficient funds"
         
         fromAccount.balance -= amount
-        toAcc.balance += amount
+        toAccount.balance += amount
         
         self._saveTransaction(accountNumber, toAccount, amount, description)
         self._saveAccounts()
         
-        return True, f"Successfully transferred PHP {amount:.2f} to account {toAccount}"
+        return True, f"Successfully transferred PHP {amount:.2f} to account {toAccount.accountNumber}"
     
     def _saveTransaction(self, fromAccount, toAccount, amount, description):
         """ Save transactions to transactions.csv"""

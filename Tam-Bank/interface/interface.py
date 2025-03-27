@@ -54,15 +54,15 @@ class GUIinterface:
         txtID = Entry(self.mainWindow, font = defaultFont)
         txtPass = Entry(self.mainWindow, font = defaultFont, show= '*')
         btnLogin = Button(self.mainWindow, text = 'Login', font = btnFont, padx = 15, command = lambda: self._authenticate(txtID, txtPass))
-        btnApply = Button(self.mainWindow, text = 'Apply', font = btnFont, padx = 15, command = lambda: self._showApplyScreen())
+        btnApply = Button(self.mainWindow, text = 'Apply Now', font = ('Helvetica', 12), padx = 15, command = lambda: self._showApplyScreen())
 
         # place the widgets
         lblAccountID.place(x = 160, y = 300)
         lblPassword.place(x = 175, y = 350)
         txtID.place(x = 340, y = 300)
         txtPass.place(x = 340, y = 350)
-        btnLogin.place(x = 450, y = 400)
-        btnApply.place(x = 555, y = 400)
+        btnLogin.place(x = 555, y = 400)
+        btnApply.place(x = 420, y = 400)
 
         self.mainWindow.mainloop()
 
@@ -120,12 +120,12 @@ class GUIinterface:
         # Add styling
         lblFont = ('Helvetica', 18, 'bold')
         txtFont = ('Helvetica', 18)
-        btnFont = ('Helvetica', 16)
+        btnFont = ('Helvetica', 12)
         infoFont = ('Helvetica', 12)
 
         applyScreen = Toplevel(self.mainWindow)
         applyScreen.title('Become a Tam-Bank Member!')
-        applyScreen.geometry('540x600')
+        applyScreen.geometry('540x630')
         applyScreen.resizable(False, False)
         applyScreen.grab_set()
 
@@ -242,8 +242,8 @@ class GUIinterface:
                 return
         
         # Name validation - letters only
-        fName = fields['First Name'].get().strip()
-        lName = fields['Last Name'].get().strip()
+        fName = fields['First Name'].get().capitalize().strip()
+        lName = fields['Last Name'].get().capitalize().strip()
         if not fName.isalpha() or not lName.isalpha():
             messagebox.showerror('Error', 'First and Last name must only contain letters.')
             return

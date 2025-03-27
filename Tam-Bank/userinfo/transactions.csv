@@ -1,2 +1,16 @@
 transacId,date,from_account,to_account,amount,description
-
+191205,2025-03-27 10:24:47,20221169,20221169,1000.0,Deposit
+875327,2025-03-27 10:38:03,20221169,"Account Number: 20224175
+Name: Earl Camama
+Mobile Number: 09765005009
+Email: earlcamama10@gmail.com
+Balance: PHP600.00
+Date Opened: 2025-03-25 20:50:07
+Status: Active",500.0,TRANSFER
+709493,2025-03-27 10:46:31,20221169,"Account Number: 20224175
+Name: Earl Camama
+Mobile Number: 09765005009
+Email: earlcamama10@gmail.com
+Balance: PHP800.00
+Date Opened: 2025-03-25 20:50:07
+Status: Active",200.0,TRANSFER

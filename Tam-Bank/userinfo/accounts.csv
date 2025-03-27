@@ -1,4 +1,5 @@
 Account Number,First Name,Last Name,Mobile Number,Email,Balance,Date Opened,Status,Password Hash,Account Type
-admin,admin,account,1234,admin,100980002000.0,2025-03-18 13:26:09,Active,18c20634a67c7e8e2a4fd2d6779e024d394bbf66eadfc97217b1786d2c102bbb,Savings
-20224175,Earl,Camama,09765005009,earlcamama10@gmail.com,100.0,2025-03-25 20:50:07,Active,e026d6ea2a904f9d26befcc4c09e56bb9411bcc7e4abe9713e10879de7dc07d9,Savings
+admin,admin,account,1234,admin,100980002000.0,2025-03-18 13:26:09,Active,7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358,Savings
+20224175,Earl,Camama,09765005009,earlcamama10@gmail.com,800.0,2025-03-25 20:50:07,Active,e026d6ea2a904f9d26befcc4c09e56bb9411bcc7e4abe9713e10879de7dc07d9,Savings
 20218733,savings,savings,09765005009,savings@yahoo.com,500.0,2025-03-26 16:08:23,Inactive,e026d6ea2a904f9d26befcc4c09e56bb9411bcc7e4abe9713e10879de7dc07d9,Savings
+20221169,Guinevere,Tendero,09828492189,@.com,800.0,2025-03-27 10:15:43,Active,e130e47605854f02690696b60bf81ae3ef6d53cfab7d278cb6869f4d32248318,Savings
