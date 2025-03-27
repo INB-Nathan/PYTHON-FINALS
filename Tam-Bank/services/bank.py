@@ -226,13 +226,13 @@ class TamBank:
 
         return True, f"Withdrawed PHP {float(amount):.2f}."
     
-    def transaction(self, accountNumber, toAccount, amount, description):
+    def transaction(self, accountNumber, toAccountNum, amount, description):
         """Transfer between accounts"""
         fromAccount = self.getAccount(accountNumber)
         if not fromAccount:
             return False, "Sender account not found"
         
-        toAccount = self.getAccount(toAccount)
+        toAccount = self.getAccount(toAccountNum)
         if not toAccount:
             return False, "Recipient account not found"
         
@@ -252,7 +252,7 @@ class TamBank:
         fromAccount.balance -= amount
         toAccount.balance += amount
         
-        self._saveTransaction(accountNumber, toAccount, amount, description)
+        self._saveTransaction(accountNumber, toAccountNum, amount, description)
         self._saveAccounts()
         
         return True, f"Successfully transferred PHP {amount:.2f} to account {toAccount.accountNumber}"
