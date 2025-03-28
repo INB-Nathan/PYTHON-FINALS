@@ -251,6 +251,7 @@ class AdminGUIinterface:
             messagebox.showerror("Error", f"Error viewing application: {str(e)}")
             
     def _approveApplication(self, tree):
+        """ Approves selected application id. """
         selected = tree.selection()
         if not selected:
             messagebox.showwarning("No Selection", "Please select an application to decline")
@@ -281,60 +282,6 @@ class AdminGUIinterface:
             
         except Exception as e:
             messagebox.showerror("Error", f"Error approving application: {str(e)}")
-
-    # def _approveApplication(self, applicationId):
-    #     """Approve an account application with proper tuple unpacking"""
-    #     from utils.filehandling import FileHandling
-    #     # Get the application details
-    #     application = self._getApplication(applicationId)
-    #     if not application:
-    #         return False, "Application not found"
-        
-    #     try:
-    #         # Create the account
-    #         result = self.bank.createAccount(
-    #             fName=application['fName'],
-    #             lName=application['lName'],
-    #             initialBal=application['initialBal'],
-    #             mobileNo=application['mobileNo'],
-    #             email=application['email'],
-    #             accountType=application['bankType']
-    #         )
-            
-    #         # Properly unpack the tuple result
-    #         if isinstance(result, tuple):
-    #             if len(result) >= 2:
-    #                 account, message = result
-                    
-    #                 # Check if account creation was successful
-    #                 if account:
-    #                     # Update application status
-    #                     success, _ = FileHandling.updateApplicationStatus(applicationId, "Accepted")
-                        
-    #                     # Return success with account number and message
-    #                     return True, f"Application approved. Account created: {account.accountNumber}"
-    #                 else:
-    #                     # Account creation returned a falsy first value
-    #                     return False, f"Failed to create account: {message}"
-    #             else:
-    #                 # Tuple with insufficient elements
-    #                 return False, "Invalid result format from account creation"
-    #         else:
-    #             # For backward compatibility with older versions that might return just an account
-    #             account = result
-                
-    #             # Update application status
-    #             success, _ = FileHandling.updateApplicationStatus(applicationId, "Accepted")
-                
-    #             # Return success with account number
-    #             return True, f"Application approved. Account created: {account.accountNumber}"
-                
-    #     except Exception as e:
-    #         # Log the error with detailed information for debugging
-    #         print(f"Error processing approval: {e}")
-    #         # Include exception type for better diagnostics
-    #         return False, f"Error processing approval: {type(e).__name__} - {str(e)}"
-        
     
     def _declineApplication(self, tree):
         """Decline the selected application"""
@@ -668,7 +615,6 @@ class AdminGUIinterface:
                                             font=('Helvetica', 12))
         self.statsLabels['total_accounts'].pack(side=LEFT, padx=10)
         
-        # Account status breakdown section - Added detailed status counts
         statusFrame = LabelFrame(frame, text="Account Status Breakdown", font=('Helvetica', 11))
         statusFrame.pack(fill=X, pady=5, padx=20)
         

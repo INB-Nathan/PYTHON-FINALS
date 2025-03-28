@@ -110,14 +110,12 @@ class GUIinterface:
 
     def _showApplyScreen(self):
         """Display the account application screen with minimum balance requirements"""
-        # Define minimum balances as constants for maintainability
-        MIN_BALANCES = {
+        minBalance = {
             "Savings": 500.0,
             "Checking": 100.0,
             "Business": 1000.0
         }
         
-        # Add styling
         lblFont = ('Helvetica', 18, 'bold')
         txtFont = ('Helvetica', 18)
         btnFont = ('Helvetica', 12)
@@ -159,21 +157,19 @@ class GUIinterface:
         fields['Account Type'] = accountTypeVar
         row += 1
 
-        # Add minimum balance information frame
         balanceInfoFrame = Frame(applyScreen, bg="#fff8e1", padx=20, pady=10)  # Light amber background
         balanceInfoFrame.grid(row=row, column=0, columnspan=2, sticky='we', padx=20, pady=5)
         
         minimumBalanceLabel = Label(
             balanceInfoFrame,
-            text=f"Minimum Initial Balance for Savings: PHP {MIN_BALANCES['Savings']:.2f}",
+            text=f"Minimum Initial Balance for Savings: PHP {minBalance['Savings']:.2f}",
             font=infoFont,
             bg="#fff8e1",
-            fg="#d32f2f"  # Red text for emphasis
+            fg="#d32f2f"
         )
         minimumBalanceLabel.pack(anchor=W)
         row += 1
 
-        # Application process information
         infoFrame = Frame(applyScreen, bg="#e8f5e9", padx=20, pady=10)  # Light green background
         infoFrame.grid(row=row, column=0, columnspan=2, sticky='we', padx=20, pady=10)
         
@@ -197,26 +193,23 @@ class GUIinterface:
         btnSubmit.pack(side=LEFT, padx=20)
         btnCancel.pack(side=RIGHT, padx=20)
 
-        # Function to update minimum balance information when account type changes
-        def update_balance_info(*args):
-            selected_type = accountTypeVar.get()
-            min_balance = MIN_BALANCES.get(selected_type, 0.0)
+        def updateBalInfo(*args):
+            """ When user selects different account types, it changes the minimum balance requirements with visuals. """
+            selectedType = accountTypeVar.get()
+            minBalances = minBalance.get(selectedType, 0.0)
             
-            # Update minimum balance label
             minimumBalanceLabel.config(
-                text=f"Minimum Initial Balance for {selected_type}: PHP {min_balance:.2f}"
+                text=f"Minimum Initial Balance for {selectedType}: PHP {minBalances:.2f}"
             )
             
-            # Highlight initial balance field if minimum balance required
-            if min_balance > 0:
+            if minBalances > 0:
                 fields['Initial Balance'].config(highlightbackground="#d32f2f", highlightthickness=2)
             else:
                 fields['Initial Balance'].config(highlightbackground="gray", highlightthickness=1)
 
-        # Track changes to account type dropdown
-        accountTypeVar.trace_add("write", update_balance_info)
         
-        # Set initial balance field highlight
+        accountTypeVar.trace_add("write", updateBalInfo)
+        
         fields['Initial Balance'].config(highlightbackground="#d32f2f", highlightthickness=2)
         
         applyScreen.mainloop()
@@ -224,7 +217,7 @@ class GUIinterface:
 
     def _submitApplication(self, fields, window):
         """ Submit a new account application """
-        MIN_BALANCES = {
+        minBalance = {
             "Savings": 500.0,
             "Checking": 100.0,
             "Business": 1000.0
@@ -262,7 +255,7 @@ class GUIinterface:
         
         # Get selected account type
         bankType = fields['Account Type'].get()
-        min_balance_required = MIN_BALANCES.get(bankType, 0.0)
+        min_balance_required = minBalance.get(bankType, 0.0)
         
         # Validate initial balance
         try:
@@ -284,9 +277,7 @@ class GUIinterface:
         try:
             # Save application
             from utils.filehandling import FileHandling
-            
-            # Update FileHandling.MIN_BALANCE to match the selected account type's requirement
-            # This ensures consistent validation between UI and backend
+
             FileHandling.MIN_BALANCE = min_balance_required
             
             success, applicationId = FileHandling.saveApplication(
@@ -873,6 +864,7 @@ class GUIinterface:
         btnChangePass.pack(pady=10)
 
     def _logout(self):
+        """ Basically just goes back to loginScreen(), while setting the activeAccount to none. """
         self.activeAccount = None
         self.loginScreen()
 

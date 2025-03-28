@@ -8,19 +8,18 @@ class FileHandling:
     accountFile = "Tam-Bank/userinfo/accounts.csv"
     transactionFile = "Tam-Bank/userinfo/transactions.csv"
     
-    # Minimum balance constant to enforce requirements
-    MIN_BALANCE = 50.0  # Set this to your actual minimum balance requirement
+    minBal = 50.0
 
     @staticmethod
     def saveFile(accountList):
         """ Save the account details to the .csv file with account type """
         try:
-            # Ensure directory exists
+            # Check if path exists, if path does not exist, create the directory.
             os.makedirs(os.path.dirname(FileHandling.accountFile), exist_ok=True)
             
             with open(FileHandling.accountFile, "w", newline='') as csvfile:
                 save = csv.writer(csvfile)
-                # Modified header to include Account Type
+                # write the header
                 save.writerow([
                     "Account Number", "First Name", "Last Name", "Mobile Number", 
                     "Email", "Balance", "Date Opened", "Status", "Password Hash", "Account Type"
@@ -30,7 +29,6 @@ class FileHandling:
                     # Format the date to string for consistency
                     formattedDate = account.dateOpened.strftime('%Y-%m-%d %H:%M:%S')
                     
-                    # Handle optional attributes with defensive programming
                     passHash = account.passHash if hasattr(account, 'passHash') else ""
                     
                     # Get account type with fallback to "Savings" if not present
@@ -62,19 +60,17 @@ class FileHandling:
                 read = csv.reader(csvfile)
                 header = next(read, None)
                 
-                # Map column indices for flexibility and backward compatibility
-                col_indices = {}
-                for i, col_name in enumerate(header or []):
-                    col_indices[col_name] = i
+                col = {}
+                for i, colName in enumerate(header or []):
+                    col[colName] = i
                 
                 # Iterate through the rows of data
                 for row in read:
-                    # Skip processing if row is too short
+                    # Skip processing if row is too short, if too short means that something is missing which can produce an error.
                     if len(row) < 8:
                         continue
                         
                     try:
-                        # Initialize balance with proper error handling
                         initialBal = 0.0
                         try:
                             if row[5]:
@@ -85,11 +81,10 @@ class FileHandling:
                         # Extract password hash if available
                         passHash = row[8] if len(row) > 8 else None
                         
-                        # Extract account type if available (backward compatibility)
                         accountType = "Savings"  # Default value
-                        type_index = col_indices.get("Account Type")
-                        if type_index is not None and len(row) > type_index:
-                            accountType = row[type_index] or "Savings"
+                        typeIndex = col.get("Account Type")
+                        if typeIndex is not None and len(row) > typeIndex:
+                            accountType = row[typeIndex] or "Savings"
                         
                         # Create account object
                         account = Account(
@@ -105,17 +100,17 @@ class FileHandling:
                         # Set account type
                         account.accountType = accountType
 
-                        # Parse date with robust error handling
-                        date_str = row[6]
+                        # Parse date
+                        dateStr = row[6]
                         try:
-                            account.dateOpened = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                            account.dateOpened = datetime.strptime(dateStr, '%Y-%m-%d %H:%M:%S')
                         except ValueError:
                             try:
-                                account.dateOpened = datetime.strptime(date_str, '%Y-%m-%d')
+                                account.dateOpened = datetime.strptime(dateStr, '%Y-%m-%d')
                             except ValueError:
                                 # Fallback to current time if date parsing fails
                                 account.dateOpened = datetime.now()
-                                print(f"Warning: Could not parse date '{date_str}', using current time")
+                                print(f"Warning: Could not parse date '{dateStr}', using current time")
                         
                         # Set account status
                         account.status = row[7]
@@ -140,11 +135,11 @@ class FileHandling:
             os.makedirs(os.path.dirname(FileHandling.transactionFile), exist_ok=True)
             
             # Check if file exists
-            file_exists = os.path.exists(FileHandling.transactionFile) and os.path.getsize(FileHandling.transactionFile) > 0
+            fileExists = os.path.exists(FileHandling.transactionFile) and os.path.getsize(FileHandling.transactionFile) > 0
             
             with open(FileHandling.transactionFile, "a", newline='') as csvfile:
                 save = csv.writer(csvfile)
-                if not file_exists:
+                if not fileExists:
                     save.writerow(["Account Number", "Date", "Description", "Amount", "Balance"])
                 
                 for transaction in transactions:
@@ -171,7 +166,6 @@ class FileHandling:
                 if not header:
                     return transactions
                 
-                # Dynamic column mapping for flexibility
                 cols = {name: i for i, name in enumerate(header)}
                 accIdx = cols.get("Account Number", 0)
                 dateIdx = cols.get("Date", 1)
@@ -187,13 +181,13 @@ class FileHandling:
                     # Only process transactions for the specified account
                     if row[accIdx] == accountNumber:
                         try:
-                            # Parse date with robust error handling
-                            date_str = row[dateIdx]
+                            # Parse date
+                            dateStr = row[dateIdx]
                             try:
-                                trans_date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
+                                trans_date = datetime.strptime(dateStr, '%Y-%m-%d %H:%M:%S.%f')
                             except ValueError:
                                 try:
-                                    trans_date = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                                    trans_date = datetime.strptime(dateStr, '%Y-%m-%d %H:%M:%S')
                                 except ValueError:
                                     # Fallback to current time
                                     trans_date = datetime.now()
@@ -218,22 +212,22 @@ class FileHandling:
     def saveApplication(fName, lName, mobileNo, email, initialBal, bankType):
         """Save a new application to the applications.csv file"""
         try:
-            # Validate minimum balance requirement before proceeding
+            # Validate minimum balance
             initialBal = float(initialBal) if isinstance(initialBal, str) else initialBal
-            if initialBal < FileHandling.MIN_BALANCE:
-                return False, f"Initial balance must be at least ${FileHandling.MIN_BALANCE:.2f}"
+            if initialBal < FileHandling.minBal:
+                return False, f"Initial balance must be at least ${FileHandling.minBal:.2f}"
             
             # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(FileHandling.applicationFile), exist_ok=True)
             
             # Check if file exists and write header if needed
-            file_exists = os.path.exists(FileHandling.applicationFile) and os.path.getsize(FileHandling.applicationFile) > 0
+            fileExists = os.path.exists(FileHandling.applicationFile) and os.path.getsize(FileHandling.applicationFile) > 0
             
             with open(FileHandling.applicationFile, "a", newline='') as csvfile:
                 save = csv.writer(csvfile)
                 
                 # Write header if file is new or empty
-                if not file_exists:
+                if not fileExists:
                     save.writerow([
                         "Application ID", "First Name", "Last Name", "Mobile Number", 
                         "Email", "Initial Balance", "Bank Type", "Status", "Application Date"

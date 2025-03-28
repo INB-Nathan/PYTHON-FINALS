@@ -1,4 +1,3 @@
-# import needed dependencies or modules.
 from models.account import Account
 from utils.filehandling import FileHandling
 from datetime import datetime, timedelta
@@ -101,10 +100,8 @@ class TamBank:
         
         if not self.isAdmin(accountNumber):
             self._checkAccountStatus(accountNumber)
-        
             account = self.getAccount(accountNumber)
-
-                
+  
         if account.status.lower() not in ["active", "inactive"]:
             return False, "This account is not active"
                 
