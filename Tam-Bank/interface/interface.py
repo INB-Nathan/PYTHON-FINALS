@@ -255,7 +255,7 @@ class GUIinterface:
         
         # Get selected account type
         bankType = fields['Account Type'].get()
-        min_balance_required = minBalance.get(bankType, 0.0)
+        minBalRequired = minBalance.get(bankType, 0.0)
         
         # Validate initial balance
         try:
@@ -264,12 +264,11 @@ class GUIinterface:
                 messagebox.showerror('Error', 'Initial balance cannot be negative.')
                 return
                 
-            # Check against minimum balance for the selected account type
-            if initialBal < min_balance_required:
+            if initialBal < minBalRequired:
                 messagebox.showerror('Error', 
-                                f'Initial balance for {bankType} accounts must be at least PHP {min_balance_required:.2f}.\n\n'
+                                f'Initial balance for {bankType} accounts must be at least PHP {minBalRequired:.2f}.\n\n'
                                 f'You entered: PHP {initialBal:.2f}')
-                return  # Critical fix: Added return statement to stop processing
+                return
         except ValueError:
             messagebox.showerror('Error', 'Initial balance must be a valid number.')
             return
@@ -278,7 +277,7 @@ class GUIinterface:
             # Save application
             from utils.filehandling import FileHandling
 
-            FileHandling.MIN_BALANCE = min_balance_required
+            FileHandling.minBal = minBalRequired
             
             success, applicationId = FileHandling.saveApplication(
                 fName, lName, phone, email, initialBal, bankType
@@ -292,7 +291,6 @@ class GUIinterface:
                                 f'notified when your account is approved.')
                 window.destroy()
             else:
-                # Error message from the backend
                 messagebox.showerror('Error', f'Failed to submit application: {applicationId}')
         except Exception as e:
             messagebox.showerror('Error', f'Failed to submit application: {str(e)}')

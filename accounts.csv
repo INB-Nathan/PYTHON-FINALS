@@ -1,0 +1,12 @@
+Account Number,First Name,Last Name,Mobile Number,Email,Balance,Date Opened,Status,Password Hash,Account Type
+admin,admin,account,1234,admin,100980002000.0,2025-03-29 12:04:41,Active,240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9,Savings
+20213286,Ricardo,Bautista,09890779946,ricardobautista105@icloud.com,29729.38,2025-01-04 02:03:32,Active,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20219279,Sofia,Navarro,09746412689,sofianavarro28@icloud.com,35942.97,2025-03-10 02:12:20,Closed,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20217924,David,Ng,09465341213,davidng285@yahoo.com,47882.05,2025-02-02 16:19:19,Active,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20216881,Sofia,Manuel,09469319644,sofiamanuel619@outlook.com,36621.72,2025-02-22 01:30:07,Active,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20226925,Danilo,Torres,09719927151,danilotorres197@gmail.com,33232.53,2025-03-17 01:22:47,Suspended,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20217227,Manuel,Salazar,09398471886,manuelsalazar465@outlook.com,18823.96,2025-01-21 08:11:12,Suspended,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20213677,Teresa,Hernandez,09596348124,teresahernandez389@outlook.com,35031.77,2025-01-22 07:44:25,Suspended,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Business
+20216168,Lourdes,Salazar,09530747414,lourdessalazar275@gmail.com,45700.24,2025-02-25 01:37:31,Suspended,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20228517,Rosario,Ang,09253407200,rosarioang272@yahoo.com,37376.95,2025-02-22 07:54:29,Suspended,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
+20224593,Arnold,Acosta,09248532577,arnoldacosta522@hotmail.com,37911.22,2025-03-25 14:30:54,Active,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Savings
