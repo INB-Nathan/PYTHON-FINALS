@@ -2,11 +2,11 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python 3.8+"/>
-  <img src="https://img.shields.io/badge/Status-Development-yellow.svg" alt="Status: Development"/>
+  <img src="https://img.shields.io/badge/Status-Finished-green.svg" alt="Status: Finished"/>
 </div>
 
 <div align="center">
-  <p><strong>A comprehensive banking system built in Python</strong></p>
+  <p><strong>Banking system built in Python</strong></p>
   <p>2TSY2425_IT0011_TC22-9 - Pykings</p>
 </div>
 
@@ -59,11 +59,6 @@ The system provides GUI interface for managing bank accounts, performing financi
 - **csv** - Data storage and management
 - **tkinter** - GUI
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.8 or higher
-
 ## 👥 Team Members
 
 | Member | GitHub Username | Name |
@@ -76,11 +71,6 @@ The system provides GUI interface for managing bank accounts, performing financi
 
 ## 📊 Project Status
 
-Last Updated: 2025-03-22
-Status: Finalizing
+Last Updated: 2025-04-01
+Status: Finished
 
----
-
-<div align="center">
-  <p>© 2025 Pykings. All Rights Reserved.</p>
-</div>
